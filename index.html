@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mundial 2026 · Atlas de Probabilidades IPS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Spline+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#080b11; --ink2:#0d121b; --surf:#131a26; --surf2:#1a2433;
+  --line:#243042; --line2:#2e3c52;
+  --txt:#e9eef5; --muted:#8896aa; --faint:#5b6979;
+  --home:#ff2e74; --draw:#ffc83d; --away:#21d4fd;
+  --green:#3ddc97; --red:#ff5d5d; --fifa:#8b7cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--txt);font-family:'Spline Sans',sans-serif;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(900px 600px at 88% -8%, rgba(255,46,116,.10), transparent 55%),
+    radial-gradient(800px 600px at 5% 4%, rgba(33,212,253,.09), transparent 52%),
+    radial-gradient(700px 500px at 50% 120%, rgba(139,124,255,.07), transparent 60%);
+  background-attachment:fixed;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+header{padding:46px 0 8px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:'Spline Sans Mono',monospace;
+  font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line);border-radius:100px;padding:6px 14px;background:rgba(255,255,255,.015)}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--home);box-shadow:0 0 12px var(--home)}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;line-height:.92;
+  font-size:clamp(38px,7vw,82px);letter-spacing:-.02em;margin:20px 0 0}
+h1 .grad{background:linear-gradient(100deg,var(--home),var(--draw) 50%,var(--away));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);max-width:640px;margin-top:16px;font-size:16px}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.chip{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--muted);
+  background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:8px 13px}
+.chip b{color:var(--txt);font-weight:600}
+
+nav.tabs{position:sticky;top:0;z-index:50;margin-top:34px;padding:12px 0;
+  background:linear-gradient(var(--ink),rgba(8,11,17,.9));backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.tabs-inner{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:14.5px;color:var(--muted);
+  background:transparent;border:1px solid transparent;border-radius:10px;padding:9px 16px;cursor:pointer;transition:.18s}
+.tab:hover{color:var(--txt);background:var(--surf)}
+.tab.on{color:var(--ink);background:var(--txt)}
+
+/* blend control */
+.blend{position:sticky;top:57px;z-index:49;background:rgba(8,11,17,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);padding:14px 0}
+.blend-inner{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.blend-lab{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.blend-lab.h{color:var(--draw)} .blend-lab.f{color:var(--away)}
+.slider-box{flex:1;min-width:220px;display:flex;flex-direction:column;gap:5px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;
+  background:linear-gradient(90deg,var(--draw),var(--fifa),var(--away));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+  background:#fff;border:3px solid var(--ink);box-shadow:0 2px 10px rgba(0,0,0,.6);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:pointer}
+.blend-read{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--muted);text-align:center}
+.blend-read b{color:var(--txt)}
+.preset{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--muted);background:var(--surf);
+  border:1px solid var(--line2);border-radius:7px;padding:6px 10px;cursor:pointer;transition:.15s}
+.preset:hover{color:var(--txt);border-color:var(--away)}
+
+section.view{display:none;padding:34px 0 90px;animation:fade .4s ease}
+section.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sec-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:25px;letter-spacing:-.01em;margin-bottom:5px}
+.sec-d{color:var(--muted);font-size:14.5px;margin-bottom:22px;max-width:700px}
+.card{background:linear-gradient(180deg,var(--surf),var(--ink2));border:1px solid var(--line);border-radius:16px;padding:18px}
+
+.rank-row{display:grid;grid-template-columns:30px 30px 1fr auto;align-items:center;gap:12px;padding:11px 14px;
+  border-radius:11px;border:1px solid transparent;transition:.16s;cursor:pointer}
+.rank-row:hover{background:var(--surf);border-color:var(--line)}
+.rank-n{font-family:'Spline Sans Mono',monospace;color:var(--faint);font-size:13px;text-align:right}
+.flag{width:30px;height:21px;border-radius:3px;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.5);background:var(--surf2)}
+.rk-name{font-weight:600;font-size:15px}
+.rk-meta{font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:var(--muted)}
+.rk-bar-wrap{display:flex;align-items:center;gap:11px}
+.rk-bar{width:160px;height:8px;border-radius:6px;background:var(--surf2);overflow:hidden}
+.rk-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--away),var(--home));transition:width .35s}
+.rk-val{font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;width:42px;text-align:right}
+.star{color:var(--draw);font-size:11px;letter-spacing:-1px}
+.delta{font-family:'Spline Sans Mono',monospace;font-size:10px;padding:1px 5px;border-radius:4px;margin-left:6px}
+.delta.up{color:var(--green);background:rgba(61,220,151,.12)}
+.delta.dn{color:var(--red);background:rgba(255,93,93,.12)}
+
+.selbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+select{font-family:'Spline Sans',sans-serif;font-size:14px;color:var(--txt);background:var(--surf);
+  border:1px solid var(--line2);border-radius:10px;padding:11px 14px;cursor:pointer;outline:none}
+select:focus{border-color:var(--away)}
+.profile-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.flag-lg{width:74px;height:52px;border-radius:6px;object-fit:cover;box-shadow:0 4px 18px rgba(0,0,0,.55)}
+.p-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;letter-spacing:-.02em;line-height:1}
+.p-tag{color:var(--muted);font-size:13px;font-family:'Spline Sans Mono',monospace;margin-top:5px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:12px;margin:20px 0}
+.stat{background:var(--ink2);border:1px solid var(--line);border-radius:13px;padding:15px}
+.stat .v{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:26px;line-height:1}
+.stat .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin-top:6px;font-family:'Spline Sans Mono',monospace}
+.wdl{display:flex;height:13px;border-radius:7px;overflow:hidden;margin-top:14px;background:var(--surf2)}
+.wdl span{display:block;height:100%}
+.wdl-key{display:flex;gap:18px;margin-top:9px;font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:var(--muted)}
+.wdl-key i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+.matchlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.match{background:linear-gradient(180deg,var(--surf),var(--ink2));border:1px solid var(--line);border-radius:15px;
+  padding:16px 18px;transition:.18s}
+.match:hover{border-color:var(--line2);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.m-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+.m-when{font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:var(--muted)}
+.m-grp{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.m-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:14px}
+.m-team{display:flex;align-items:center;gap:10px}
+.m-team.away{flex-direction:row-reverse;text-align:right}
+.m-team .nm{font-weight:600;font-size:15px}
+.m-vs{font-family:'Spline Sans Mono',monospace;color:var(--faint);font-size:12px}
+.xg{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--faint);display:block;margin-top:2px}
+.probbar{display:flex;height:34px;border-radius:9px;overflow:hidden;font-family:'Spline Sans Mono',monospace;
+  font-size:12px;font-weight:600;border:1px solid var(--line)}
+.probbar span{display:flex;align-items:center;justify-content:center;color:#06080c;transition:width .35s;min-width:0;overflow:hidden;white-space:nowrap}
+.pb-w{background:linear-gradient(180deg,#ff558d,var(--home))}
+.pb-d{background:linear-gradient(180deg,#ffd566,var(--draw));color:#3a2c00}
+.pb-l{background:linear-gradient(180deg,#5fe0ff,var(--away))}
+.probbar span.tiny{font-size:0}
+.pb-leg{display:flex;justify-content:space-between;margin-top:7px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--muted)}
+.h2h{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);font-family:'Spline Sans Mono',monospace;
+  font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.h2h .tag{font-size:9.5px;letter-spacing:.08em;color:var(--faint);text-transform:uppercase}
+.h2h b{color:var(--txt);font-weight:600}
+.h2h .none{color:var(--faint);font-style:normal}
+.h2h .g{color:var(--green)} .h2h .e{color:var(--draw)} .h2h .p{color:var(--red)}
+.fbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:22px}
+.fsel{font-family:'Spline Sans Mono',monospace;font-size:12.5px;color:var(--txt);background:var(--surf);
+  border:1px solid var(--line2);border-radius:9px;padding:9px 13px;cursor:pointer;transition:.15s}
+.daygroup{margin-bottom:30px}
+.dayhead{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px;margin:6px 0 14px;
+  padding-bottom:9px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.dayhead .cnt{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--faint);font-weight:400}
+.grpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.grpcard h3{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.grpcard h3 .badge{background:var(--surf2);color:var(--away);border-radius:7px;width:30px;height:30px;display:grid;place-items:center;font-size:14px;border:1px solid var(--line2)}
+.gt-row{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px;padding:7px 0}
+.gt-bar{height:7px;border-radius:5px;background:var(--surf2);overflow:hidden;margin-top:4px}
+.gt-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--away),var(--home));transition:width .35s}
+.gt-val{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--muted)}
+.note{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--faint);border-left:2px solid var(--line2);
+  padding:10px 0 10px 14px;margin-top:8px;line-height:1.8}
+footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--faint);font-size:12.5px;font-family:'Spline Sans Mono',monospace;line-height:1.8}
+.badge-deb{font-size:9.5px;font-family:'Spline Sans Mono',monospace;color:var(--draw);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;margin-left:7px;vertical-align:middle}
+@media(max-width:560px){.rk-bar{width:80px}.rank-row{grid-template-columns:26px 28px 1fr auto}h1{font-size:44px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <span class="eyebrow"><span class="dot"></span>Poisson + Ranking FIFA · IPS Sports Analytics</span>
+  <h1>Atlas Mundial<br><span class="grad">2026</span></h1>
+  <p class="sub">Probabilidades de resultado que combinan <b style="color:var(--txt)">96 a&ntilde;os de historia mundialista</b> con el <b style="color:var(--txt)">ranking FIFA actual</b>. Mueve el control para pesar pasado contra presente.</p>
+  <div class="meta-row" id="meta"></div>
+</div></header>
+
+<nav class="tabs"><div class="wrap"><div class="tabs-inner">
+  <button class="tab on" data-v="resumen">Resumen</button>
+  <button class="tab" data-v="pais">Selecci&oacute;n</button>
+  <button class="tab" data-v="calendario">Calendario</button>
+  <button class="tab" data-v="grupos">Grupos</button>
+  <button class="tab" data-v="metodo">Metodolog&iacute;a</button>
+</div></div></nav>
+
+<div class="blend"><div class="wrap"><div class="blend-inner">
+  <span class="blend-lab h">&#9664; Hist&oacute;rico</span>
+  <div class="slider-box">
+    <input type="range" id="blend" min="0" max="100" value="50">
+    <div class="blend-read">Mezcla: <b id="bH">50%</b> historia &middot; <b id="bF">50%</b> ranking FIFA</div>
+  </div>
+  <span class="blend-lab f">FIFA actual &#9654;</span>
+  <button class="preset" data-w="0">Solo historia</button>
+  <button class="preset" data-w="50">50/50</button>
+  <button class="preset" data-w="100">Solo FIFA</button>
+</div></div></div>
+
+<main class="wrap">
+  <section class="view on" id="resumen">
+    <div class="sec-h">Ranking de poder combinado</div>
+    <p class="sec-d">El <b style="color:var(--txt)">poder combinado</b> resume la fuerza de cada selecci&oacute;n en un solo n&uacute;mero (ataque &divide; defensa): cuanto m&aacute;s alto, m&aacute;s probable es que gane. Combina su rendimiento hist&oacute;rico en Mundiales con su ranking FIFA actual, en la proporci&oacute;n que elijas con el control de arriba. Las etiquetas <span style="color:var(--green)">&#9650;</span>/<span style="color:var(--red)">&#9660;</span> indican cu&aacute;ntos puestos gana o pierde la selecci&oacute;n en esta tabla frente a su posici&oacute;n en el ranking FIFA puro &mdash; es decir, cu&aacute;nto la favorece o perjudica tomar en cuenta la historia. La barra est&aacute; normalizada al l&iacute;der. Pulsa cualquier fila para ver el perfil completo. <span class="star">&#9733;</span> = t&iacute;tulos mundiales.</p>
+    <div class="card"><div id="ranklist"></div></div>
+  </section>
+  <section class="view" id="pais">
+    <div class="selbar"><select id="countrySel"></select></div>
+    <div id="profile"></div>
+  </section>
+  <section class="view" id="calendario">
+    <div class="sec-h">Calendario &amp; probabilidades</div>
+    <p class="sec-d">72 partidos de fase de grupos. Cada barra: victoria local / empate / victoria visitante, recalculada con la mezcla actual.</p>
+    <div class="fbar" id="grpfilter"></div>
+    <div id="fixtures"></div>
+  </section>
+  <section class="view" id="grupos">
+    <div class="sec-h">Los 12 grupos</div>
+    <p class="sec-d">Fuerza relativa dentro de cada grupo (barra normalizada al l&iacute;der del grupo).</p>
+    <div class="grpgrid" id="groupgrid"></div>
+  </section>
+  <section class="view" id="metodo">
+    <div class="sec-h">C&oacute;mo se calculan las probabilidades</div>
+    <div class="card" style="max-width:780px">
+      <p style="color:var(--muted);font-size:14.5px;line-height:1.75">El modelo combina <b style="color:var(--txt)">dos fuentes</b> de fuerza para cada selecci&oacute;n y las funde con el control deslizante.</p>
+      <div class="note" style="margin-top:16px">
+        <b style="color:var(--draw)">Se&ntilde;al hist&oacute;rica</b> &mdash; ataque y defensa de los 964 partidos mundialistas 1930&ndash;2022, relativos al promedio del torneo, con ponderaci&oacute;n por recencia (vida media &asymp; 3 Mundiales) y encogimiento bayesiano para muestras peque&ntilde;as.<br><br>
+        <b style="color:var(--away)">Se&ntilde;al actual</b> &mdash; ranking FIFA (actualizaci&oacute;n abril 2026). Los puntos se convierten en ataque/defensa con un factor &beta;=0.00113 calibrado contra la f&oacute;rmula de expectativa Elo de la FIFA (1/(1+10^(-&Delta;/600))).
+      </div>
+      <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-top:16px">Para una mezcla <i>w</i> (peso FIFA): ataque<sub>final</sub> = ataque<sub>hist</sub><sup>1&minus;w</sup> &middot; ataque<sub>FIFA</sub><sup>w</sup> (media geom&eacute;trica), igual para la defensa. Luego &lambda; = promedio &times; ataque<sub>A</sub> &times; defensa<sub>B</sub> y una <b style="color:var(--txt)">distribuci&oacute;n de Poisson</b> sobre marcadores 0&ndash;10 da P(victoria)/P(empate)/P(derrota). Sedes (M&eacute;xico, EE.&nbsp;UU., Canad&aacute;) reciben +10% de localía.</p>
+      <p style="color:var(--faint);font-size:12.5px;margin-top:16px;line-height:1.7">La mezcla con FIFA da referencia actual incluso a las cuatro selecciones sin historia mundialista (Curazao, Cabo Verde, Jordania, Uzbekist&aacute;n). Estimaciones estad&iacute;sticas, no pron&oacute;sticos definitivos: no incorporan plantillas, lesiones ni forma de clubes.</p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  Atlas Mundial 2026 &middot; Modelo Poisson &times; Ranking FIFA (abril 2026)<br>
+  Fuentes: FIFA World Cup All-Match Dataset 1930&ndash;2022 (964 partidos) &middot; Ranking FIFA/Coca-Cola (abril 2026).<br>
+  Autor: JGG
+</div></footer>
+
+<script>
+const DATA={"countries":{"México":{"group":"A","iso":"mx","en":"Mexico","hist":true,"profile":{"P":60,"W":17,"D":15,"L":28,"GF":62,"GA":101,"apps":17,"first":1930,"last":2022,"titles":0,"winpct":28.3},"fifa":1684.13,"fAtk":1.1253,"fDef":0.8886,"fifaRank":14,"hAtk":0.855,"hDef":0.953},"Sudáfrica":{"group":"A","iso":"za","en":"South Africa","hist":true,"profile":{"P":9,"W":2,"D":4,"L":3,"GF":11,"GA":16,"apps":3,"first":1998,"last":2010,"titles":0,"winpct":22.2},"fifa":1428.38,"fAtk":0.8418,"fDef":1.1879,"fifaRank":40,"hAtk":0.979,"hDef":1.1},"República de Corea":{"group":"A","iso":"kr","en":"South Korea","hist":true,"profile":{"P":38,"W":7,"D":10,"L":21,"GF":39,"GA":78,"apps":11,"first":1954,"last":2022,"titles":0,"winpct":18.4},"fifa":1589.65,"fAtk":1.0109,"fDef":0.9892,"fifaRank":23,"hAtk":0.916,"hDef":1.21},"República Checa":{"group":"A","iso":"cz","en":"Czech Republic","hist":true,"profile":{"P":33,"W":12,"D":5,"L":16,"GF":47,"GA":49,"apps":9,"first":1934,"last":2006,"titles":0,"winpct":36.4},"fifa":1503.04,"fAtk":0.9163,"fDef":1.0914,"fifaRank":33,"hAtk":0.999,"hDef":1.005},"Canadá":{"group":"B","iso":"ca","en":"Canada","hist":true,"profile":{"P":6,"W":0,"D":0,"L":6,"GF":2,"GA":12,"apps":2,"first":1986,"last":2022,"titles":0,"winpct":0.0},"fifa":1560.62,"fAtk":0.9781,"fDef":1.0224,"fifaRank":27,"hAtk":0.839,"hDef":1.223},"Bosnia y Herzegovina":{"group":"B","iso":"ba","en":"Bosnia and Herzegovina","hist":true,"profile":{"P":3,"W":1,"D":0,"L":2,"GF":4,"GA":4,"apps":1,"first":2014,"last":2014,"titles":0,"winpct":33.3},"fifa":1385.77,"fAtk":0.8021,"fDef":1.2468,"fifaRank":43,"hAtk":1.006,"hDef":1.006},"Catar":{"group":"B","iso":"qa","en":"Qatar","hist":true,"profile":{"P":3,"W":0,"D":0,"L":3,"GF":1,"GA":7,"apps":1,"first":2022,"last":2022,"titles":0,"winpct":0.0},"fifa":1452.37,"fAtk":0.8651,"fDef":1.156,"fifaRank":38,"hAtk":0.798,"hDef":1.22},"Suiza":{"group":"B","iso":"ch","en":"Switzerland","hist":true,"profile":{"P":41,"W":14,"D":8,"L":19,"GF":55,"GA":73,"apps":12,"first":1934,"last":2022,"titles":0,"winpct":34.1},"fifa":1650.75,"fAtk":1.0835,"fDef":0.923,"fifaRank":18,"hAtk":0.961,"hDef":1.079},"Brasil":{"group":"C","iso":"br","en":"Brazil","hist":true,"profile":{"P":114,"W":76,"D":19,"L":19,"GF":237,"GA":108,"apps":22,"first":1930,"last":2022,"titles":5,"winpct":66.7},"fifa":1762.66,"fAtk":1.2302,"fDef":0.8129,"fifaRank":6,"hAtk":1.299,"hDef":0.762},"Marruecos":{"group":"C","iso":"ma","en":"Morocco","hist":true,"profile":{"P":23,"W":5,"D":7,"L":11,"GF":20,"GA":27,"apps":6,"first":1970,"last":2022,"titles":0,"winpct":21.7},"fifa":1756.94,"fAtk":1.2222,"fDef":0.8182,"fifaRank":8,"hAtk":0.801,"hDef":0.851},"Haití":{"group":"C","iso":"ht","en":"Haiti","hist":true,"profile":{"P":3,"W":0,"D":0,"L":3,"GF":2,"GA":14,"apps":1,"first":1974,"last":1974,"titles":0,"winpct":0.0},"fifa":1291.71,"fAtk":0.7209,"fDef":1.3872,"fifaRank":47,"hAtk":0.989,"hDef":1.06},"Escocia":{"group":"C","iso":"gb-sct","en":"Scotland","hist":true,"profile":{"P":23,"W":4,"D":7,"L":12,"GF":25,"GA":41,"apps":8,"first":1954,"last":1998,"titles":0,"winpct":17.4},"fifa":1499.92,"fAtk":0.913,"fDef":1.0953,"fifaRank":34,"hAtk":0.946,"hDef":1.063},"Estados Unidos":{"group":"D","iso":"us","en":"United States","hist":true,"profile":{"P":37,"W":9,"D":8,"L":20,"GF":40,"GA":66,"apps":11,"first":1930,"last":2022,"titles":0,"winpct":24.3},"fifa":1675.7,"fAtk":1.1146,"fDef":0.8972,"fifaRank":15,"hAtk":0.842,"hDef":1.04},"Paraguay":{"group":"D","iso":"py","en":"Paraguay","hist":true,"profile":{"P":27,"W":7,"D":10,"L":10,"GF":30,"GA":38,"apps":8,"first":1930,"last":2010,"titles":0,"winpct":25.9},"fifa":1503.5,"fAtk":0.9167,"fDef":1.0908,"fifaRank":32,"hAtk":0.852,"hDef":0.848},"Australia":{"group":"D","iso":"au","en":"Australia","hist":true,"profile":{"P":20,"W":4,"D":4,"L":12,"GF":17,"GA":37,"apps":6,"first":1974,"last":2022,"titles":0,"winpct":20.0},"fifa":1578.66,"fAtk":0.9984,"fDef":1.0016,"fifaRank":24,"hAtk":0.844,"hDef":1.255},"Turquía":{"group":"D","iso":"tr","en":"Turkey","hist":true,"profile":{"P":10,"W":5,"D":1,"L":4,"GF":20,"GA":17,"apps":2,"first":1954,"last":2002,"titles":0,"winpct":50.0},"fifa":1601.99,"fAtk":1.0251,"fDef":0.9755,"fifaRank":20,"hAtk":1.032,"hDef":0.938},"Alemania":{"group":"E","iso":"de","en":"Germany","hist":true,"profile":{"P":112,"W":68,"D":21,"L":23,"GF":232,"GA":130,"apps":20,"first":1934,"last":2022,"titles":4,"winpct":60.7},"fifa":1731.3,"fAtk":1.1872,"fDef":0.8423,"fifaRank":10,"hAtk":1.396,"hDef":0.809},"Curazao":{"group":"E","iso":"cw","en":null,"hist":false,"profile":{"P":0,"W":0,"D":0,"L":0,"GF":0,"GA":0,"apps":0,"first":null,"last":null,"titles":0,"winpct":0},"fifa":1293.08,"fAtk":0.722,"fDef":1.3851,"fifaRank":46,"hAtk":0.881,"hDef":1.103},"Costa de Marfil":{"group":"E","iso":"ci","en":"Ivory Coast","hist":true,"profile":{"P":9,"W":3,"D":1,"L":5,"GF":13,"GA":14,"apps":3,"first":2006,"last":2014,"titles":0,"winpct":33.3},"fifa":1532.98,"fAtk":0.9479,"fDef":1.0549,"fifaRank":30,"hAtk":1.036,"hDef":1.069},"Ecuador":{"group":"E","iso":"ec","en":"Ecuador","hist":true,"profile":{"P":13,"W":5,"D":2,"L":6,"GF":14,"GA":14,"apps":4,"first":2002,"last":2022,"titles":0,"winpct":38.5},"fifa":1596.48,"fAtk":1.0188,"fDef":0.9816,"fifaRank":22,"hAtk":0.946,"hDef":0.907},"Países Bajos":{"group":"F","iso":"nl","en":"Netherlands","hist":true,"profile":{"P":55,"W":30,"D":14,"L":11,"GF":96,"GA":52,"apps":11,"first":1934,"last":2022,"titles":0,"winpct":54.5},"fifa":1757.87,"fAtk":1.2235,"fDef":0.8173,"fifaRank":7,"hAtk":1.28,"hDef":0.727},"Japón":{"group":"F","iso":"jp","en":"Japan","hist":true,"profile":{"P":25,"W":7,"D":6,"L":12,"GF":25,"GA":33,"apps":7,"first":1998,"last":2022,"titles":0,"winpct":28.0},"fifa":1661.58,"fAtk":1.0969,"fDef":0.9117,"fifaRank":17,"hAtk":0.903,"hDef":1.022},"Suecia":{"group":"F","iso":"se","en":"Sweden","hist":true,"profile":{"P":51,"W":19,"D":13,"L":19,"GF":80,"GA":73,"apps":12,"first":1934,"last":2018,"titles":0,"winpct":37.3},"fifa":1510.11,"fAtk":0.9236,"fDef":1.0827,"fifaRank":31,"hAtk":0.985,"hDef":0.893},"Túnez":{"group":"F","iso":"tn","en":"Tunisia","hist":true,"profile":{"P":18,"W":3,"D":5,"L":10,"GF":14,"GA":26,"apps":6,"first":1978,"last":2022,"titles":0,"winpct":16.7},"fifa":1479.1,"fAtk":0.8917,"fDef":1.1215,"fifaRank":35,"hAtk":0.811,"hDef":1.07},"Bélgica":{"group":"G","iso":"be","en":"Belgium","hist":true,"profile":{"P":51,"W":21,"D":10,"L":20,"GF":69,"GA":74,"apps":14,"first":1930,"last":2022,"titles":0,"winpct":41.2},"fifa":1739.55,"fAtk":1.1984,"fDef":0.8345,"fifaRank":9,"hAtk":1.075,"hDef":0.821},"Egipto":{"group":"G","iso":"eg","en":"Egypt","hist":true,"profile":{"P":7,"W":0,"D":2,"L":5,"GF":5,"GA":12,"apps":3,"first":1934,"last":2018,"titles":0,"winpct":0.0},"fifa":1565.56,"fAtk":0.9836,"fDef":1.0166,"fifaRank":25,"hAtk":0.862,"hDef":1.101},"RI de Irán":{"group":"G","iso":"ir","en":"Iran","hist":true,"profile":{"P":18,"W":3,"D":4,"L":11,"GF":13,"GA":31,"apps":6,"first":1978,"last":2022,"titles":0,"winpct":16.7},"fifa":1616.04,"fAtk":1.0416,"fDef":0.96,"fifaRank":19,"hAtk":0.799,"hDef":1.13},"Nueva Zelanda":{"group":"G","iso":"nz","en":"New Zealand","hist":true,"profile":{"P":6,"W":0,"D":3,"L":3,"GF":4,"GA":14,"apps":2,"first":1982,"last":2010,"titles":0,"winpct":0.0},"fifa":1281.57,"fAtk":0.7126,"fDef":1.4033,"fifaRank":48,"hAtk":0.911,"hDef":0.99},"España":{"group":"H","iso":"es","en":"Spain","hist":true,"profile":{"P":67,"W":31,"D":17,"L":19,"GF":108,"GA":75,"apps":16,"first":1934,"last":2022,"titles":1,"winpct":46.3},"fifa":1876.4,"fAtk":1.3997,"fDef":0.7144,"fifaRank":2,"hAtk":1.266,"hDef":0.868},"Cabo Verde":{"group":"H","iso":"cv","en":null,"hist":false,"profile":{"P":0,"W":0,"D":0,"L":0,"GF":0,"GA":0,"apps":0,"first":null,"last":null,"titles":0,"winpct":0},"fifa":1369.29,"fAtk":0.7872,"fDef":1.2703,"fifaRank":44,"hAtk":0.881,"hDef":1.103},"Arabia Saudí":{"group":"H","iso":"sa","en":"Saudi Arabia","hist":true,"profile":{"P":19,"W":4,"D":2,"L":13,"GF":14,"GA":44,"apps":6,"first":1994,"last":2022,"titles":0,"winpct":21.1},"fifa":1419.73,"fAtk":0.8336,"fDef":1.1996,"fifaRank":41,"hAtk":0.781,"hDef":1.38},"Uruguay":{"group":"H","iso":"uy","en":"Uruguay","hist":true,"profile":{"P":59,"W":25,"D":13,"L":21,"GF":89,"GA":76,"apps":14,"first":1930,"last":2022,"titles":1,"winpct":42.4},"fifa":1673.07,"fAtk":1.1113,"fDef":0.8999,"fifaRank":16,"hAtk":0.931,"hDef":0.876},"Francia":{"group":"I","iso":"fr","en":"France","hist":true,"profile":{"P":73,"W":39,"D":14,"L":20,"GF":136,"GA":85,"apps":16,"first":1930,"last":2022,"titles":2,"winpct":53.4},"fifa":1877.32,"fAtk":1.4012,"fDef":0.7137,"fifaRank":1,"hAtk":1.317,"hDef":0.77},"Senegal":{"group":"I","iso":"sn","en":"Senegal","hist":true,"profile":{"P":12,"W":5,"D":3,"L":4,"GF":16,"GA":17,"apps":3,"first":2002,"last":2022,"titles":0,"winpct":41.7},"fifa":1686.41,"fAtk":1.1282,"fDef":0.8864,"fifaRank":13,"hAtk":1.005,"hDef":1.087},"Irak":{"group":"I","iso":"iq","en":"Iraq","hist":true,"profile":{"P":3,"W":0,"D":0,"L":3,"GF":1,"GA":4,"apps":1,"first":1986,"last":1986,"titles":0,"winpct":0.0},"fifa":1447.77,"fAtk":0.8605,"fDef":1.1621,"fifaRank":39,"hAtk":0.967,"hDef":1.001},"Noruega":{"group":"I","iso":"no","en":"Norway","hist":true,"profile":{"P":8,"W":2,"D":3,"L":3,"GF":7,"GA":8,"apps":3,"first":1938,"last":1998,"titles":0,"winpct":25.0},"fifa":1555.6,"fAtk":0.9726,"fDef":1.0282,"fifaRank":28,"hAtk":0.951,"hDef":0.951},"Argentina":{"group":"J","iso":"ar","en":"Argentina","hist":true,"profile":{"P":88,"W":47,"D":17,"L":24,"GF":152,"GA":101,"apps":18,"first":1930,"last":2022,"titles":3,"winpct":53.4},"fifa":1874.81,"fAtk":1.3972,"fDef":0.7157,"fifaRank":3,"hAtk":1.254,"hDef":0.882},"Argelia":{"group":"J","iso":"dz","en":"Algeria","hist":true,"profile":{"P":13,"W":3,"D":3,"L":7,"GF":13,"GA":19,"apps":4,"first":1982,"last":2014,"titles":0,"winpct":23.1},"fifa":1564.26,"fAtk":0.9822,"fDef":1.0181,"fifaRank":26,"hAtk":0.937,"hDef":1.029},"Austria":{"group":"J","iso":"at","en":"Austria","hist":true,"profile":{"P":29,"W":12,"D":4,"L":13,"GF":43,"GA":47,"apps":7,"first":1934,"last":1998,"titles":0,"winpct":41.4},"fifa":1597.4,"fAtk":1.0198,"fDef":0.9806,"fifaRank":21,"hAtk":0.959,"hDef":1.002},"Jordania":{"group":"J","iso":"jo","en":null,"hist":false,"profile":{"P":0,"W":0,"D":0,"L":0,"GF":0,"GA":0,"apps":0,"first":null,"last":null,"titles":0,"winpct":0},"fifa":1390.1,"fAtk":0.806,"fDef":1.2407,"fifaRank":42,"hAtk":0.881,"hDef":1.103},"Portugal":{"group":"K","iso":"pt","en":"Portugal","hist":true,"profile":{"P":35,"W":17,"D":6,"L":12,"GF":61,"GA":41,"apps":8,"first":1966,"last":2022,"titles":0,"winpct":48.6},"fifa":1763.83,"fAtk":1.2318,"fDef":0.8118,"fifaRank":5,"hAtk":1.229,"hDef":0.954},"RD Congo":{"group":"K","iso":"cd","en":"DR Congo","hist":true,"profile":{"P":3,"W":0,"D":0,"L":3,"GF":0,"GA":14,"apps":1,"first":1974,"last":1974,"titles":0,"winpct":0.0},"fifa":1478.35,"fAtk":0.8909,"fDef":1.1224,"fifaRank":36,"hAtk":0.977,"hDef":1.06},"Uzbekistán":{"group":"K","iso":"uz","en":null,"hist":false,"profile":{"P":0,"W":0,"D":0,"L":0,"GF":0,"GA":0,"apps":0,"first":null,"last":null,"titles":0,"winpct":0},"fifa":1461.21,"fAtk":0.8738,"fDef":1.1445,"fifaRank":37,"hAtk":0.881,"hDef":1.103},"Colombia":{"group":"K","iso":"co","en":"Colombia","hist":true,"profile":{"P":22,"W":9,"D":3,"L":10,"GF":32,"GA":30,"apps":6,"first":1962,"last":2018,"titles":0,"winpct":40.9},"fifa":1695.99,"fAtk":1.1406,"fDef":0.8768,"fifaRank":12,"hAtk":1.157,"hDef":0.848},"Inglaterra":{"group":"L","iso":"gb-eng","en":"England","hist":true,"profile":{"P":74,"W":32,"D":22,"L":20,"GF":104,"GA":68,"apps":16,"first":1950,"last":2022,"titles":1,"winpct":43.2},"fifa":1825.97,"fAtk":1.3218,"fDef":0.7565,"fifaRank":4,"hAtk":1.174,"hDef":0.792},"Croacia":{"group":"L","iso":"hr","en":"Croatia","hist":true,"profile":{"P":30,"W":13,"D":8,"L":9,"GF":43,"GA":33,"apps":6,"first":1998,"last":2022,"titles":0,"winpct":43.3},"fifa":1712.24,"fAtk":1.1618,"fDef":0.8607,"fifaRank":11,"hAtk":1.1,"hDef":0.931},"Ghana":{"group":"L","iso":"gh","en":"Ghana","hist":true,"profile":{"P":15,"W":5,"D":3,"L":7,"GF":18,"GA":23,"apps":4,"first":2006,"last":2022,"titles":0,"winpct":33.3},"fifa":1345.23,"fAtk":0.766,"fDef":1.3055,"fifaRank":45,"hAtk":1.001,"hDef":1.163},"Panamá":{"group":"L","iso":"pa","en":"Panama","hist":true,"profile":{"P":3,"W":0,"D":0,"L":3,"GF":2,"GA":11,"apps":1,"first":2018,"last":2018,"titles":0,"winpct":0.0},"fifa":1539.14,"fAtk":0.9546,"fDef":1.0476,"fifaRank":29,"hAtk":0.889,"hDef":1.422}},"fixtures":[{"date":"2026-06-11","time":"15:00","home":"México","away":"Sudáfrica","group":"A","stadium":"Estadio Ciudad de México","pw":39.8,"pd":26.7,"pl":33.6,"xgh":1.34,"xga":1.2,"h2h":{"n":1,"g":0,"e":1,"p":0,"gf":1,"ga":1,"last":2010}},{"date":"2026-06-11","time":"22:00","home":"República de Corea","away":"República Checa","group":"A","stadium":"Estadio Guadalajara","pw":29.0,"pd":25.0,"pl":45.9,"xgh":1.19,"xga":1.56,"h2h":{"n":0}},{"date":"2026-06-12","time":"15:00","home":"Canadá","away":"Bosnia y Herzegovina","group":"B","stadium":"Estadio Toronto","pw":28.8,"pd":24.8,"pl":46.4,"xgh":1.2,"xga":1.59,"h2h":{"n":0}},{"date":"2026-06-12","time":"21:00","home":"Estados Unidos","away":"Paraguay","group":"D","stadium":"Estadio Los Ángeles","pw":32.0,"pd":29.4,"pl":38.6,"xgh":1.01,"xga":1.14,"h2h":{"n":1,"g":1,"e":0,"p":0,"gf":3,"ga":0,"last":1930}},{"date":"2026-06-13","time":"15:00","home":"Catar","away":"Suiza","group":"B","stadium":"Estadio Bahía de San Francisco","pw":27.9,"pd":25.6,"pl":46.5,"xgh":1.11,"xga":1.51,"h2h":{"n":0}},{"date":"2026-06-13","time":"18:00","home":"Brasil","away":"Marruecos","group":"C","stadium":"Estadio Nueva York Nueva Jersey","pw":52.2,"pd":27.1,"pl":20.7,"xgh":1.43,"xga":0.79,"h2h":{"n":1,"g":1,"e":0,"p":0,"gf":3,"ga":0,"last":1998}},{"date":"2026-06-13","time":"21:00","home":"Haití","away":"Escocia","group":"C","stadium":"Estadio Boston","pw":38.4,"pd":26.1,"pl":35.5,"xgh":1.36,"xga":1.29,"h2h":{"n":0}},{"date":"2026-06-13","time":"00:00","home":"Australia","away":"Turquía","group":"D","stadium":"Estadio BC Place Vancouver","pw":23.1,"pd":24.3,"pl":52.6,"xgh":1.02,"xga":1.67,"h2h":{"n":0}},{"date":"2026-06-14","time":"13:00","home":"Alemania","away":"Curazao","group":"E","stadium":"Estadio Houston","pw":62.2,"pd":21.1,"pl":16.7,"xgh":1.99,"xga":0.92,"h2h":null},{"date":"2026-06-14","time":"16:00","home":"Países Bajos","away":"Japón","group":"F","stadium":"Estadio Dallas","pw":57.3,"pd":24.0,"pl":18.7,"xgh":1.69,"xga":0.85,"h2h":{"n":1,"g":1,"e":0,"p":0,"gf":1,"ga":0,"last":2010}},{"date":"2026-06-14","time":"19:00","home":"Costa de Marfil","away":"Ecuador","group":"E","stadium":"Estadio Filadelfia","pw":34.4,"pd":26.9,"pl":38.8,"xgh":1.21,"xga":1.31,"h2h":{"n":0}},{"date":"2026-06-14","time":"22:00","home":"Suecia","away":"Túnez","group":"F","stadium":"Estadio Monterrey","pw":46.6,"pd":27.6,"pl":25.8,"xgh":1.36,"xga":0.93,"h2h":{"n":0}},{"date":"2026-06-15","time":"12:00","home":"España","away":"Cabo Verde","group":"H","stadium":"Estadio Atlanta","pw":56.5,"pd":23.0,"pl":20.5,"xgh":1.8,"xga":0.99,"h2h":null},{"date":"2026-06-15","time":"15:00","home":"Bélgica","away":"Egipto","group":"G","stadium":"Estadio Seattle","pw":51.6,"pd":25.8,"pl":22.5,"xgh":1.53,"xga":0.91,"h2h":{"n":0}},{"date":"2026-06-15","time":"18:00","home":"Arabia Saudí","away":"Uruguay","group":"H","stadium":"Estadio Miami","pw":19.9,"pd":24.4,"pl":55.7,"xgh":0.88,"xga":1.66,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":0,"ga":1,"last":2018}},{"date":"2026-06-15","time":"21:00","home":"RI de Irán","away":"Nueva Zelanda","group":"G","stadium":"Estadio Los Ángeles","pw":28.7,"pd":27.6,"pl":43.7,"xgh":1.02,"xga":1.33,"h2h":{"n":0}},{"date":"2026-06-16","time":"15:00","home":"Francia","away":"Senegal","group":"I","stadium":"Estadio Nueva York Nueva Jersey","pw":57.3,"pd":22.6,"pl":20.1,"xgh":1.85,"xga":1.0,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":0,"ga":1,"last":2002}},{"date":"2026-06-16","time":"18:00","home":"Irak","away":"Noruega","group":"I","stadium":"Estadio Boston","pw":35.2,"pd":27.5,"pl":37.2,"xgh":1.19,"xga":1.23,"h2h":{"n":0}},{"date":"2026-06-16","time":"21:00","home":"Argentina","away":"Argelia","group":"J","stadium":"Estadio Kansas City","pw":51.4,"pd":24.3,"pl":24.3,"xgh":1.67,"xga":1.07,"h2h":{"n":0}},{"date":"2026-06-16","time":"00:00","home":"Austria","away":"Jordania","group":"J","stadium":"Estadio Bahía de San Francisco","pw":42.0,"pd":26.8,"pl":31.3,"xgh":1.37,"xga":1.14,"h2h":null},{"date":"2026-06-17","time":"13:00","home":"Portugal","away":"RD Congo","group":"K","stadium":"Estadio Houston","pw":48.6,"pd":24.1,"pl":27.4,"xgh":1.68,"xga":1.2,"h2h":{"n":0}},{"date":"2026-06-17","time":"16:00","home":"Inglaterra","away":"Croacia","group":"L","stadium":"Estadio Dallas","pw":43.5,"pd":26.5,"pl":30.0,"xgh":1.41,"xga":1.12,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":1,"ga":2,"last":2018}},{"date":"2026-06-17","time":"19:00","home":"Ghana","away":"Panamá","group":"L","stadium":"Estadio Toronto","pw":49.3,"pd":22.8,"pl":27.9,"xgh":1.84,"xga":1.33,"h2h":{"n":0}},{"date":"2026-06-17","time":"22:00","home":"Uzbekistán","away":"Colombia","group":"K","stadium":"Estadio Ciudad de México","pw":22.1,"pd":24.5,"pl":53.4,"xgh":0.96,"xga":1.65,"h2h":null},{"date":"2026-06-18","time":"12:00","home":"República Checa","away":"Sudáfrica","group":"A","stadium":"Estadio Atlanta","pw":40.5,"pd":25.8,"pl":33.7,"xgh":1.42,"xga":1.27,"h2h":{"n":0}},{"date":"2026-06-18","time":"15:00","home":"Suiza","away":"Bosnia y Herzegovina","group":"B","stadium":"Estadio Los Ángeles","pw":33.4,"pd":26.0,"pl":40.6,"xgh":1.25,"xga":1.4,"h2h":{"n":0}},{"date":"2026-06-18","time":"18:00","home":"Canadá","away":"Catar","group":"B","stadium":"Estadio BC Place Vancouver","pw":41.6,"pd":25.6,"pl":32.8,"xgh":1.45,"xga":1.26,"h2h":{"n":0}},{"date":"2026-06-18","time":"21:00","home":"México","away":"República de Corea","group":"A","stadium":"Estadio Guadalajara","pw":45.0,"pd":26.0,"pl":29.0,"xgh":1.47,"xga":1.13,"h2h":{"n":2,"g":2,"e":0,"p":0,"gf":5,"ga":2,"last":2018}},{"date":"2026-06-19","time":"15:00","home":"Estados Unidos","away":"Australia","group":"D","stadium":"Estadio Seattle","pw":45.7,"pd":25.7,"pl":28.7,"xgh":1.5,"xga":1.13,"h2h":{"n":0}},{"date":"2026-06-19","time":"18:00","home":"Escocia","away":"Marruecos","group":"C","stadium":"Estadio Boston","pw":33.7,"pd":29.6,"pl":36.7,"xgh":1.04,"xga":1.1,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":0,"ga":3,"last":1998}},{"date":"2026-06-19","time":"21:00","home":"Brasil","away":"Haití","group":"C","stadium":"Estadio Filadelfia","pw":56.3,"pd":23.2,"pl":20.5,"xgh":1.78,"xga":0.97,"h2h":{"n":0}},{"date":"2026-06-19","time":"00:00","home":"Turquía","away":"Paraguay","group":"D","stadium":"Estadio Bahía de San Francisco","pw":37.8,"pd":29.4,"pl":32.8,"xgh":1.13,"xga":1.03,"h2h":{"n":0}},{"date":"2026-06-20","time":"13:00","home":"Países Bajos","away":"Suecia","group":"F","stadium":"Estadio Houston","pw":50.0,"pd":26.4,"pl":23.6,"xgh":1.48,"xga":0.92,"h2h":{"n":1,"g":0,"e":1,"p":0,"gf":0,"ga":0,"last":1974}},{"date":"2026-06-20","time":"16:00","home":"Alemania","away":"Costa de Marfil","group":"E","stadium":"Estadio Toronto","pw":57.0,"pd":22.0,"pl":21.0,"xgh":1.93,"xga":1.08,"h2h":{"n":0}},{"date":"2026-06-20","time":"22:00","home":"Ecuador","away":"Curazao","group":"E","stadium":"Estadio Kansas City","pw":44.0,"pd":27.4,"pl":28.7,"xgh":1.35,"xga":1.03,"h2h":null},{"date":"2026-06-20","time":"00:00","home":"Túnez","away":"Japón","group":"F","stadium":"Estadio Monterrey","pw":31.6,"pd":28.1,"pl":40.3,"xgh":1.07,"xga":1.25,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":0,"ga":2,"last":2002}},{"date":"2026-06-21","time":"12:00","home":"España","away":"Arabia Saudí","group":"H","stadium":"Estadio Atlanta","pw":68.6,"pd":18.3,"pl":13.1,"xgh":2.26,"xga":0.88,"h2h":{"n":1,"g":1,"e":0,"p":0,"gf":1,"ga":0,"last":2006}},{"date":"2026-06-21","time":"15:00","home":"Bélgica","away":"RI de Irán","group":"G","stadium":"Estadio Los Ángeles","pw":54.4,"pd":25.4,"pl":20.3,"xgh":1.57,"xga":0.85,"h2h":{"n":0}},{"date":"2026-06-21","time":"18:00","home":"Uruguay","away":"Cabo Verde","group":"H","stadium":"Estadio Miami","pw":44.2,"pd":27.7,"pl":28.1,"xgh":1.33,"xga":1.0,"h2h":null},{"date":"2026-06-21","time":"21:00","home":"Nueva Zelanda","away":"Egipto","group":"G","stadium":"Estadio BC Place Vancouver","pw":40.9,"pd":27.5,"pl":31.6,"xgh":1.29,"xga":1.1,"h2h":{"n":0}},{"date":"2026-06-22","time":"13:00","home":"Argentina","away":"Austria","group":"J","stadium":"Estadio Dallas","pw":49.7,"pd":24.7,"pl":25.6,"xgh":1.62,"xga":1.09,"h2h":{"n":0}},{"date":"2026-06-22","time":"17:00","home":"Francia","away":"Irak","group":"I","stadium":"Estadio Filadelfia","pw":54.8,"pd":24.0,"pl":21.2,"xgh":1.7,"xga":0.96,"h2h":{"n":0}},{"date":"2026-06-22","time":"20:00","home":"Noruega","away":"Senegal","group":"I","stadium":"Estadio Nueva York Nueva Jersey","pw":39.1,"pd":26.5,"pl":34.4,"xgh":1.33,"xga":1.23,"h2h":{"n":0}},{"date":"2026-06-22","time":"23:00","home":"Jordania","away":"Argelia","group":"J","stadium":"Estadio Bahía de San Francisco","pw":32.7,"pd":26.9,"pl":40.5,"xgh":1.17,"xga":1.33,"h2h":null},{"date":"2026-06-23","time":"13:00","home":"Portugal","away":"Uzbekistán","group":"K","stadium":"Estadio Houston","pw":52.9,"pd":23.6,"pl":23.5,"xgh":1.75,"xga":1.08,"h2h":null},{"date":"2026-06-23","time":"16:00","home":"Inglaterra","away":"Ghana","group":"L","stadium":"Estadio Boston","pw":54.7,"pd":23.4,"pl":21.9,"xgh":1.76,"xga":1.02,"h2h":{"n":0}},{"date":"2026-06-23","time":"19:00","home":"Panamá","away":"Croacia","group":"L","stadium":"Estadio Toronto","pw":19.5,"pd":21.2,"pl":59.4,"xgh":1.07,"xga":2.02,"h2h":{"n":0}},{"date":"2026-06-23","time":"22:00","home":"Colombia","away":"RD Congo","group":"K","stadium":"Estadio Guadalajara","pw":49.3,"pd":25.1,"pl":25.7,"xgh":1.58,"xga":1.07,"h2h":{"n":0}},{"date":"2026-06-24","time":"15:00","home":"Suiza","away":"Canadá","group":"B","stadium":"Estadio BC Place Vancouver","pw":42.7,"pd":25.1,"pl":32.2,"xgh":1.52,"xga":1.29,"h2h":{"n":0}},{"date":"2026-06-24","time":"15:00","home":"Bosnia y Herzegovina","away":"Catar","group":"B","stadium":"Estadio Seattle","pw":50.1,"pd":25.1,"pl":24.8,"xgh":1.58,"xga":1.04,"h2h":{"n":0}},{"date":"2026-06-24","time":"18:00","home":"Escocia","away":"Brasil","group":"C","stadium":"Estadio Miami","pw":19.4,"pd":23.1,"pl":57.4,"xgh":0.93,"xga":1.78,"h2h":{"n":4,"g":0,"e":1,"p":3,"gf":2,"ga":7,"last":1998}},{"date":"2026-06-24","time":"18:00","home":"Marruecos","away":"Haití","group":"C","stadium":"Estadio Atlanta","pw":35.6,"pd":29.3,"pl":35.1,"xgh":1.1,"xga":1.09,"h2h":{"n":0}},{"date":"2026-06-24","time":"21:00","home":"República Checa","away":"México","group":"A","stadium":"Estadio Ciudad de México","pw":36.5,"pd":27.3,"pl":36.1,"xgh":1.23,"xga":1.22,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":1,"ga":3,"last":1962}},{"date":"2026-06-24","time":"21:00","home":"Sudáfrica","away":"República de Corea","group":"A","stadium":"Estadio Monterrey","pw":42.7,"pd":24.9,"pl":32.4,"xgh":1.53,"xga":1.3,"h2h":{"n":0}},{"date":"2026-06-25","time":"16:00","home":"Curazao","away":"Costa de Marfil","group":"E","stadium":"Estadio Filadelfia","pw":31.2,"pd":25.6,"pl":43.2,"xgh":1.22,"xga":1.48,"h2h":null},{"date":"2026-06-25","time":"16:00","home":"Ecuador","away":"Alemania","group":"E","stadium":"Estadio Nueva York Nueva Jersey","pw":22.8,"pd":24.7,"pl":52.5,"xgh":0.99,"xga":1.63,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":0,"ga":3,"last":2006}},{"date":"2026-06-25","time":"19:00","home":"Japón","away":"Suecia","group":"F","stadium":"Estadio Dallas","pw":29.8,"pd":27.8,"pl":42.4,"xgh":1.04,"xga":1.3,"h2h":{"n":0}},{"date":"2026-06-25","time":"19:00","home":"Túnez","away":"Países Bajos","group":"F","stadium":"Estadio Kansas City","pw":15.7,"pd":22.9,"pl":61.4,"xgh":0.76,"xga":1.77,"h2h":{"n":0}},{"date":"2026-06-25","time":"22:00","home":"Turquía","away":"Estados Unidos","group":"D","stadium":"Estadio Los Ángeles","pw":42.9,"pd":26.7,"pl":30.4,"xgh":1.39,"xga":1.12,"h2h":{"n":0}},{"date":"2026-06-25","time":"22:00","home":"Paraguay","away":"Australia","group":"D","stadium":"Estadio Bahía de San Francisco","pw":47.5,"pd":27.4,"pl":25.1,"xgh":1.38,"xga":0.92,"h2h":{"n":0}},{"date":"2026-06-26","time":"15:00","home":"Noruega","away":"Francia","group":"I","stadium":"Estadio Boston","pw":22.0,"pd":24.9,"pl":53.1,"xgh":0.95,"xga":1.62,"h2h":{"n":0}},{"date":"2026-06-26","time":"15:00","home":"Senegal","away":"Irak","group":"I","stadium":"Estadio Toronto","pw":35.6,"pd":26.1,"pl":38.3,"xgh":1.3,"xga":1.36,"h2h":{"n":0}},{"date":"2026-06-26","time":"20:00","home":"Cabo Verde","away":"Arabia Saudí","group":"H","stadium":"Estadio Houston","pw":47.9,"pd":25.1,"pl":27.0,"xgh":1.57,"xga":1.11,"h2h":null},{"date":"2026-06-26","time":"20:00","home":"Uruguay","away":"España","group":"H","stadium":"Estadio Guadalajara","pw":27.5,"pd":26.5,"pl":46.0,"xgh":1.04,"xga":1.43,"h2h":{"n":2,"g":0,"e":2,"p":0,"gf":2,"ga":2,"last":1990}},{"date":"2026-06-26","time":"23:00","home":"Egipto","away":"RI de Irán","group":"G","stadium":"Estadio Seattle","pw":39.1,"pd":27.6,"pl":33.2,"xgh":1.26,"xga":1.14,"h2h":{"n":0}},{"date":"2026-06-26","time":"23:00","home":"Nueva Zelanda","away":"Bélgica","group":"G","stadium":"Estadio BC Place Vancouver","pw":26.4,"pd":27.3,"pl":46.3,"xgh":0.97,"xga":1.37,"h2h":{"n":0}},{"date":"2026-06-27","time":"17:00","home":"Panamá","away":"Inglaterra","group":"L","stadium":"Estadio Nueva York Nueva Jersey","pw":14.7,"pd":19.4,"pl":65.9,"xgh":0.91,"xga":2.16,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":1,"ga":6,"last":2018}},{"date":"2026-06-27","time":"17:00","home":"Croacia","away":"Ghana","group":"L","stadium":"Estadio Filadelfia","pw":47.8,"pd":24.3,"pl":27.8,"xgh":1.65,"xga":1.2,"h2h":{"n":0}},{"date":"2026-06-27","time":"19:30","home":"Colombia","away":"Portugal","group":"K","stadium":"Estadio Miami","pw":39.1,"pd":25.4,"pl":35.5,"xgh":1.42,"xga":1.35,"h2h":{"n":0}},{"date":"2026-06-27","time":"19:30","home":"RD Congo","away":"Uzbekistán","group":"K","stadium":"Estadio Atlanta","pw":41.2,"pd":26.3,"pl":32.5,"xgh":1.39,"xga":1.21,"h2h":null},{"date":"2026-06-27","time":"22:00","home":"Argelia","away":"Austria","group":"J","stadium":"Estadio Kansas City","pw":35.0,"pd":27.1,"pl":37.9,"xgh":1.21,"xga":1.27,"h2h":{"n":1,"g":0,"e":0,"p":1,"gf":0,"ga":2,"last":1982}},{"date":"2026-06-27","time":"22:00","home":"Jordania","away":"Argentina","group":"J","stadium":"Estadio Dallas","pw":21.1,"pd":23.2,"pl":55.7,"xgh":1.0,"xga":1.79,"h2h":null}],"groups":{"A":["México","Sudáfrica","República de Corea","República Checa"],"B":["Canadá","Bosnia y Herzegovina","Catar","Suiza"],"C":["Brasil","Marruecos","Haití","Escocia"],"D":["Estados Unidos","Paraguay","Australia","Turquía"],"E":["Alemania","Curazao","Costa de Marfil","Ecuador"],"F":["Países Bajos","Japón","Suecia","Túnez"],"G":["Bélgica","Egipto","RI de Irán","Nueva Zelanda"],"H":["España","Cabo Verde","Arabia Saudí","Uruguay"],"I":["Francia","Senegal","Irak","Noruega"],"J":["Argentina","Argelia","Austria","Jordania"],"K":["Portugal","RD Congo","Uzbekistán","Colombia"],"L":["Inglaterra","Croacia","Ghana","Panamá"]},"meta":{"lg_avg":1.291,"matches":964,"span":"1930-2022","generated":"2026","beta":0.0011348843189977747,"meanPts":1580.1,"fifaUpdate":"abril 2026"}};
+const C=DATA.countries,FX=DATA.fixtures,G=DATA.groups,M=DATA.meta;
+const LG=M.lg_avg, HOST={'México':1,'Estados Unidos':1,'Canadá':1};
+const flag=iso=>`https://flagcdn.com/${iso.toLowerCase()}.svg`;
+const stars=n=>'&#9733;'.repeat(n);
+const DAYS=['domingo','lunes','martes','mi&eacute;rcoles','jueves','viernes','s&aacute;bado'];
+const MON=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function dlabel(iso){const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return `${DAYS[dt.getDay()]} ${d} de ${MON[m-1]}`;}
+
+let W=0.5; // FIFA weight
+
+/* blended attack/defense for a team */
+function ad(es){const c=C[es];const w=W;
+  return {a:Math.pow(c.hAtk,1-w)*Math.pow(c.fAtk,w), d:Math.pow(c.hDef,1-w)*Math.pow(c.fDef,w)};}
+function rating(es){const x=ad(es);return x.a/x.d;}
+
+/* Poisson */
+function pois(k,l){let f=1;for(let i=2;i<=k;i++)f*=i;return Math.exp(-l)*Math.pow(l,k)/f;}
+function lambdas(h,a){const H=ad(h),A=ad(a);let lh=LG*H.a*A.d, la=LG*A.a*H.d;
+  if(HOST[h])lh*=1.10; if(HOST[a])la*=1.10; return [lh,la];}
+function matchProb(h,a){const[lh,la]=lambdas(h,a);
+  const ph=[],pa=[];for(let i=0;i<11;i++){ph.push(pois(i,lh));pa.push(pois(i,la));}
+  let pw=0,pd=0,pl=0;
+  for(let i=0;i<11;i++)for(let j=0;j<11;j++){const p=ph[i]*pa[j];if(i>j)pw+=p;else if(i===j)pd+=p;else pl+=p;}
+  const s=pw+pd+pl;
+  return {pw:pw/s*100,pd:pd/s*100,pl:pl/s*100,xgh:lh,xga:la};}
+
+/* meta */
+document.getElementById('meta').innerHTML=
+  `<span class="chip"><b>${M.matches}</b> partidos hist&oacute;ricos</span>
+   <span class="chip"><b>22</b> Mundiales (${M.span})</span>
+   <span class="chip">Ranking FIFA <b>${M.fifaUpdate}</b></span>
+   <span class="chip"><b>72</b> partidos de grupo</span>`;
+
+/* RANKING */
+function renderRank(){
+  const r=Object.keys(C).map(es=>({es,r:rating(es)})).sort((a,b)=>b.r-a.r);
+  const mx=r[0].r;
+  document.getElementById('ranklist').innerHTML=r.map((o,i)=>{
+    const c=C[o.es];const dRank=c.fifaRank-(i+1);
+    const dl=dRank>0?`<span class="delta up">&#9650;${dRank}</span>`:dRank<0?`<span class="delta dn">&#9660;${-dRank}</span>`:'';
+    return `<div class="rank-row" data-country="${o.es}">
+      <div class="rank-n">${String(i+1).padStart(2,'0')}</div>
+      <img class="flag" src="${flag(c.iso)}" alt="">
+      <div><div class="rk-name">${o.es} ${c.profile.titles?`<span class="star">${stars(c.profile.titles)}</span>`:''}${dl}${!c.hist?'<span class="badge-deb">DEBUT</span>':''}</div>
+        <div class="rk-meta">Grupo ${c.group} &middot; FIFA #${c.fifaRank} (${c.fifa.toFixed(0)}) &middot; ${c.profile.apps} part.</div></div>
+      <div class="rk-bar-wrap"><div class="rk-bar"><i style="width:${(o.r/mx*100).toFixed(1)}%"></i></div>
+        <div class="rk-val">${o.r.toFixed(2)}</div></div>
+    </div>`;}).join('');
+  document.querySelectorAll('.rank-row').forEach(x=>x.onclick=()=>{selectCountry(x.dataset.country);switchTab('pais');});
+}
+
+/* SELECTOR + PROFILE */
+const sel=document.getElementById('countrySel');
+sel.innerHTML=Object.keys(C).sort((a,b)=>a.localeCompare(b,'es')).map(es=>`<option value="${es}">${es} &mdash; Grupo ${C[es].group}</option>`).join('');
+sel.onchange=()=>renderProfile(sel.value);
+function selectCountry(es){sel.value=es;renderProfile(es);}
+let curCountry='Brasil';
+function renderProfile(es){curCountry=es;const c=C[es],p=c.profile;
+  const r=Object.keys(C).map(x=>({es:x,r:rating(x)})).sort((a,b)=>b.r-a.r);
+  const pos=r.findIndex(o=>o.es===es)+1;
+  const myFix=FX.filter(f=>f.home===es||f.away===es);
+  let h=`<div class="card"><div class="profile-top">
+      <img class="flag-lg" src="${flag(c.iso)}" alt="">
+      <div><div class="p-name">${es} ${p.titles?`<span class="star" style="font-size:22px">${stars(p.titles)}</span>`:''}</div>
+      <div class="p-tag">Grupo ${c.group} &middot; #${pos} poder combinado &middot; FIFA #${c.fifaRank} (${c.fifa.toFixed(0)} pts)${!c.hist?' &middot; SIN HISTORIA MUNDIALISTA':''}</div></div>
+    </div>`;
+  if(c.hist){h+=`<div class="statgrid">
+      <div class="stat"><div class="v">${p.apps}</div><div class="l">Mundiales</div></div>
+      <div class="stat"><div class="v">${p.P}</div><div class="l">Partidos</div></div>
+      <div class="stat"><div class="v" style="color:var(--green)">${p.winpct}%</div><div class="l">% Victorias</div></div>
+      <div class="stat"><div class="v">${p.GF}<span style="font-size:15px;color:var(--muted)"> : ${p.GA}</span></div><div class="l">Goles a favor : en contra</div></div>
+      <div class="stat"><div class="v" style="color:var(--draw)">${p.titles}</div><div class="l">T&iacute;tulos</div></div>
+    </div>
+    <div style="font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:6px">BALANCE HIST&Oacute;RICO &middot; ${p.first}&ndash;${p.last}</div>
+    <div class="wdl"><span style="background:var(--green);width:${p.W/p.P*100}%"></span><span style="background:var(--draw);width:${p.D/p.P*100}%"></span><span style="background:var(--red);width:${p.L/p.P*100}%"></span></div>
+    <div class="wdl-key"><span><i style="background:var(--green)"></i>${p.W} G</span><span><i style="background:var(--draw)"></i>${p.D} E</span><span><i style="background:var(--red)"></i>${p.L} P</span></div>`;}
+  else{h+=`<div class="note" style="margin:18px 0">Sin partidos en Mundiales previos. Con la mezcla actual, su fuerza proviene del ranking FIFA (#${c.fifaRank}). En "Solo historia" usa una l&iacute;nea base conservadora.</div>`;}
+  h+=`</div><div class="sec-h" style="margin-top:32px">Partidos en el Mundial 2026</div>
+    <p class="sec-d">Probabilidades para ${es} con la mezcla actual.</p>
+    <div class="matchlist">${myFix.map(f=>matchCard(f)).join('')}</div>`;
+  document.getElementById('profile').innerHTML=h;
+}
+
+/* MATCH CARD */
+function matchCard(f){const cH=C[f.home],cA=C[f.away];const pr=matchProb(f.home,f.away);
+  const tw=v=>v<7?'tiny':'';
+  const hh=f.h2h;let h2hHtml;
+  if(hh&&hh.n>0){
+    h2hHtml=`<span class="tag">Mundiales</span><b>${hh.n}</b> ${hh.n===1?'duelo':'duelos'} &middot;
+      <span class="g">${hh.g}G</span> <span class="e">${hh.e}E</span> <span class="p">${hh.p}P</span>
+      <span style="color:var(--faint)">(${hh.gf}-${hh.ga} goles &middot; &uacute;ltimo ${hh.last})</span>`;
+  } else if(hh){
+    h2hHtml=`<span class="tag">Mundiales</span><span class="none">Sin enfrentamientos previos</span>`;
+  } else {
+    h2hHtml=`<span class="tag">Mundiales</span><span class="none">Debutante sin historial</span>`;
+  }
+  return `<div class="match">
+    <div class="m-head"><span class="m-when">${dlabel(f.date)} &middot; ${f.time}</span><span class="m-grp">GRUPO ${f.group}</span></div>
+    <div class="m-teams">
+      <div class="m-team"><img class="flag" src="${flag(cH.iso)}" alt=""><div><span class="nm">${f.home}</span><span class="xg">xG ${pr.xgh.toFixed(2)}</span></div></div>
+      <span class="m-vs">vs</span>
+      <div class="m-team away"><img class="flag" src="${flag(cA.iso)}" alt=""><div><span class="nm">${f.away}</span><span class="xg">xG ${pr.xga.toFixed(2)}</span></div></div>
+    </div>
+    <div class="probbar">
+      <span class="pb-w ${tw(pr.pw)}" style="width:${pr.pw}%">${pr.pw.toFixed(0)}%</span>
+      <span class="pb-d ${tw(pr.pd)}" style="width:${pr.pd}%">${pr.pd.toFixed(0)}%</span>
+      <span class="pb-l ${tw(pr.pl)}" style="width:${pr.pl}%">${pr.pl.toFixed(0)}%</span>
+    </div>
+    <div class="pb-leg"><span>&#9632; ${f.home}</span><span>Empate</span><span>${f.away} &#9632;</span></div>
+    <div class="h2h">${h2hHtml}</div>
+  </div>`;}
+
+/* FIXTURES */
+let activeGrp='ALL';
+const gf=document.getElementById('grpfilter');
+gf.innerHTML=`<button class="fsel" data-g="ALL">Todos</button>`+Object.keys(G).map(g=>`<button class="fsel" data-g="${g}">Grupo ${g}</button>`).join('');
+function hiF(){gf.querySelectorAll('button').forEach(b=>b.style.borderColor=b.dataset.g===activeGrp?'var(--away)':'var(--line2)');}
+gf.querySelectorAll('button').forEach(b=>b.onclick=()=>{activeGrp=b.dataset.g;hiF();renderFixtures();});
+function renderFixtures(){const list=FX.filter(f=>activeGrp==='ALL'||f.group===activeGrp);
+  const byDay={};list.forEach(f=>{(byDay[f.date]=byDay[f.date]||[]).push(f);});
+  document.getElementById('fixtures').innerHTML=Object.keys(byDay).sort().map(d=>`
+    <div class="daygroup"><div class="dayhead">${dlabel(d)} <span class="cnt">${byDay[d].length} partido(s)</span></div>
+      <div class="matchlist">${byDay[d].sort((a,b)=>a.time.localeCompare(b.time)).map(f=>matchCard(f)).join('')}</div></div>`).join('');}
+
+/* GROUPS */
+function renderGroups(){document.getElementById('groupgrid').innerHTML=Object.entries(G).map(([g,teams])=>{
+  const arr=teams.map(es=>({es,r:rating(es),iso:C[es].iso})).sort((a,b)=>b.r-a.r);const mx=arr[0].r;
+  return `<div class="card grpcard"><h3><span class="badge">${g}</span> Grupo ${g}</h3>
+    ${arr.map(t=>`<div><div class="gt-row"><img class="flag" src="${flag(t.iso)}" style="width:26px;height:18px">
+      <span style="font-weight:600;font-size:14px">${t.es}</span><span class="gt-val">${t.r.toFixed(2)}</span></div>
+      <div class="gt-bar"><i style="width:${(t.r/mx*100).toFixed(0)}%"></i></div></div>`).join('')}</div>`;}).join('');}
+
+/* TABS */
+function switchTab(v){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id===v));
+  window.scrollTo({top:document.querySelector('nav.tabs').offsetTop-10,behavior:'smooth'});}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.v));
+
+/* BLEND control */
+const slider=document.getElementById('blend');
+function applyBlend(){W=slider.value/100;
+  document.getElementById('bH').textContent=(100-slider.value)+'%';
+  document.getElementById('bF').textContent=slider.value+'%';
+  renderRank();renderProfile(curCountry);renderFixtures();renderGroups();}
+slider.oninput=applyBlend;
+document.querySelectorAll('.preset').forEach(p=>p.onclick=()=>{slider.value=p.dataset.w;applyBlend();});
+
+/* init */
+hiF();applyBlend();selectCountry('Brasil');
+</script>
+</body>
+</html>
