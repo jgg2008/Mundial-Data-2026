@@ -159,12 +159,39 @@ select:focus{border-color:var(--away)}
   padding:10px 0 10px 14px;margin-top:8px;line-height:1.8}
 footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--faint);font-size:12.5px;font-family:'Spline Sans Mono',monospace;line-height:1.8}
 .badge-deb{font-size:9.5px;font-family:'Spline Sans Mono',monospace;color:var(--draw);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;margin-left:7px;vertical-align:middle}
+/* knockout */
+.champ{background:linear-gradient(135deg,rgba(255,200,61,.16),rgba(255,46,116,.10));border:1px solid var(--line2);
+  border-radius:18px;padding:24px;display:flex;align-items:center;gap:20px;margin-bottom:26px;position:relative;overflow:hidden}
+.champ::after{content:'';position:absolute;inset:0;background:radial-gradient(400px 200px at 90% 10%,rgba(255,200,61,.18),transparent 60%);pointer-events:none}
+.champ .trophy{font-size:46px;line-height:1}
+.champ .flag{width:62px;height:44px}
+.champ .ct{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--draw)}
+.champ .cn{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1;letter-spacing:-.02em;margin-top:4px}
+.champ .cp{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--muted);margin-top:7px}
+.koround{margin-bottom:30px}
+.korhead{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px;margin:6px 0 14px;
+  padding-bottom:9px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.korhead .cnt{font-family:'Spline Sans Mono',monospace;font-size:11px;color:var(--faint);font-weight:400}
+.kogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:13px}
+.komatch{background:linear-gradient(180deg,var(--surf),var(--ink2));border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:.18s}
+.komatch:hover{border-color:var(--line2);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.32)}
+.ko-head{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:var(--faint);display:flex;justify-content:space-between;margin-bottom:11px}
+.ko-side{display:grid;grid-template-columns:auto 26px 1fr auto;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;
+  border:1px solid transparent;margin-bottom:5px;transition:.2s}
+.ko-side.win{background:rgba(61,220,151,.08);border-color:rgba(61,220,151,.3)}
+.ko-side.win .ko-nm{color:var(--txt)}
+.ko-side .ko-nm{font-weight:600;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ko-seed{font-family:'Spline Sans Mono',monospace;font-size:9px;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:2px 5px;min-width:34px;text-align:center}
+.ko-adv{font-family:'Spline Sans Mono',monospace;font-size:13px;font-weight:600;color:var(--muted)}
+.ko-side.win .ko-adv{color:var(--green)}
+.ko-advbar{height:5px;border-radius:4px;background:var(--surf2);overflow:hidden;margin-top:3px}
+.ko-advbar i{display:block;height:100%;background:linear-gradient(90deg,var(--away),var(--green));transition:width .35s}
+.konote{font-family:'Spline Sans Mono',monospace;font-size:11.5px;color:var(--faint);border-left:2px solid var(--line2);padding:8px 0 8px 13px;margin-bottom:22px;line-height:1.7}
 @media(max-width:560px){.rk-bar{width:80px}.rank-row{grid-template-columns:26px 28px 1fr auto}h1{font-size:44px}}
 </style>
 </head>
 <body>
 <header><div class="wrap">
-  <span class="eyebrow"><span class="dot"></span>Poisson + Ranking FIFA · IPS Sports Analytics</span>
   <h1>Atlas Mundial<br><span class="grad">2026</span></h1>
   <p class="sub">Probabilidades de resultado que combinan <b style="color:var(--txt)">96 a&ntilde;os de historia mundialista</b> con el <b style="color:var(--txt)">ranking FIFA actual</b>. Mueve el control para pesar pasado contra presente.</p>
   <div class="meta-row" id="meta"></div>
@@ -174,6 +201,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--faint);f
   <button class="tab on" data-v="resumen">Resumen</button>
   <button class="tab" data-v="pais">Selecci&oacute;n</button>
   <button class="tab" data-v="calendario">Calendario</button>
+  <button class="tab" data-v="eliminatorias">Fase final</button>
   <button class="tab" data-v="grupos">Grupos</button>
   <button class="tab" data-v="metodo">Metodolog&iacute;a</button>
 </div></div></nav>
@@ -205,6 +233,11 @@ footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--faint);f
     <p class="sec-d">72 partidos de fase de grupos. Cada barra: victoria local / empate / victoria visitante, recalculada con la mezcla actual.</p>
     <div class="fbar" id="grpfilter"></div>
     <div id="fixtures"></div>
+  </section>
+  <section class="view" id="eliminatorias">
+    <div class="sec-h">Cuadro proyectado &middot; partidos 73&ndash;104</div>
+    <p class="sec-d">Proyecci&oacute;n del modelo: a partir de los puntos esperados se definen 1&ordm;, 2&ordm; y 3&ordm; de cada grupo, se eligen los <b style="color:var(--txt)">8 mejores terceros</b> y se propaga el equipo m&aacute;s probable ronda por ronda. En eliminatoria no hay empate: la barra reparte el empate en partes iguales (proxy de pr&oacute;rroga/penales) para estimar qui&eacute;n avanza. Cambia la mezcla arriba y el cuadro se rehace.</p>
+    <div id="bracket"></div>
   </section>
   <section class="view" id="grupos">
     <div class="sec-h">Los 12 grupos</div>
@@ -365,6 +398,94 @@ function renderGroups(){document.getElementById('groupgrid').innerHTML=Object.en
       <span style="font-weight:600;font-size:14px">${t.es}</span><span class="gt-val">${t.r.toFixed(2)}</span></div>
       <div class="gt-bar"><i style="width:${(t.r/mx*100).toFixed(0)}%"></i></div></div>`).join('')}</div>`;}).join('');}
 
+/* ===== KNOCKOUT (matches 73-104) ===== */
+const KO=[
+ {n:73,date:'2026-06-28',st:'Los Ángeles',L:{t:'2',g:'A'},R:{t:'2',g:'B'},round:'R32'},
+ {n:74,date:'2026-06-29',st:'Boston',L:{t:'1',g:'E'},R:{t:'3',gs:['A','B','C','D','F']},round:'R32'},
+ {n:75,date:'2026-06-29',st:'Monterrey',L:{t:'1',g:'F'},R:{t:'2',g:'C'},round:'R32'},
+ {n:76,date:'2026-06-29',st:'Houston',L:{t:'1',g:'C'},R:{t:'2',g:'F'},round:'R32'},
+ {n:77,date:'2026-06-30',st:'Nueva York NJ',L:{t:'1',g:'I'},R:{t:'3',gs:['C','D','F','G','H']},round:'R32'},
+ {n:78,date:'2026-06-30',st:'Dallas',L:{t:'2',g:'E'},R:{t:'2',g:'I'},round:'R32'},
+ {n:79,date:'2026-06-30',st:'Ciudad de México',L:{t:'1',g:'A'},R:{t:'3',gs:['C','E','F','H','I']},round:'R32'},
+ {n:80,date:'2026-07-01',st:'Atlanta',L:{t:'1',g:'L'},R:{t:'3',gs:['E','H','I','J','K']},round:'R32'},
+ {n:81,date:'2026-07-01',st:'Bahía de San Francisco',L:{t:'1',g:'D'},R:{t:'3',gs:['B','E','F','I','J']},round:'R32'},
+ {n:82,date:'2026-07-01',st:'Seattle',L:{t:'1',g:'G'},R:{t:'3',gs:['A','E','H','I','J']},round:'R32'},
+ {n:83,date:'2026-07-02',st:'Toronto',L:{t:'2',g:'K'},R:{t:'2',g:'L'},round:'R32'},
+ {n:84,date:'2026-07-02',st:'Los Ángeles',L:{t:'1',g:'H'},R:{t:'2',g:'J'},round:'R32'},
+ {n:85,date:'2026-07-02',st:'BC Place Vancouver',L:{t:'1',g:'B'},R:{t:'3',gs:['E','F','G','I','J']},round:'R32'},
+ {n:86,date:'2026-07-03',st:'Miami',L:{t:'1',g:'J'},R:{t:'2',g:'H'},round:'R32'},
+ {n:87,date:'2026-07-03',st:'Kansas City',L:{t:'1',g:'K'},R:{t:'3',gs:['D','E','I','J','L']},round:'R32'},
+ {n:88,date:'2026-07-03',st:'Dallas',L:{t:'2',g:'D'},R:{t:'2',g:'G'},round:'R32'},
+ {n:89,date:'2026-07-04',st:'Filadelfia',L:{t:'W',m:74},R:{t:'W',m:77},round:'R16'},
+ {n:90,date:'2026-07-04',st:'Houston',L:{t:'W',m:73},R:{t:'W',m:75},round:'R16'},
+ {n:91,date:'2026-07-05',st:'Nueva York NJ',L:{t:'W',m:76},R:{t:'W',m:78},round:'R16'},
+ {n:92,date:'2026-07-05',st:'Ciudad de México',L:{t:'W',m:79},R:{t:'W',m:80},round:'R16'},
+ {n:93,date:'2026-07-06',st:'Dallas',L:{t:'W',m:83},R:{t:'W',m:84},round:'R16'},
+ {n:94,date:'2026-07-06',st:'Seattle',L:{t:'W',m:81},R:{t:'W',m:82},round:'R16'},
+ {n:95,date:'2026-07-07',st:'Atlanta',L:{t:'W',m:86},R:{t:'W',m:88},round:'R16'},
+ {n:96,date:'2026-07-07',st:'BC Place Vancouver',L:{t:'W',m:85},R:{t:'W',m:87},round:'R16'},
+ {n:97,date:'2026-07-09',st:'Boston',L:{t:'W',m:89},R:{t:'W',m:90},round:'QF'},
+ {n:98,date:'2026-07-10',st:'Los Ángeles',L:{t:'W',m:93},R:{t:'W',m:94},round:'QF'},
+ {n:99,date:'2026-07-11',st:'Miami',L:{t:'W',m:91},R:{t:'W',m:92},round:'QF'},
+ {n:100,date:'2026-07-11',st:'Kansas City',L:{t:'W',m:95},R:{t:'W',m:96},round:'QF'},
+ {n:101,date:'2026-07-14',st:'Dallas',L:{t:'W',m:97},R:{t:'W',m:98},round:'SF'},
+ {n:102,date:'2026-07-15',st:'Atlanta',L:{t:'W',m:99},R:{t:'W',m:100},round:'SF'},
+ {n:103,date:'2026-07-18',st:'Miami',L:{t:'L',m:101},R:{t:'L',m:102},round:'3P'},
+ {n:104,date:'2026-07-19',st:'Nueva York NJ',L:{t:'W',m:101},R:{t:'W',m:102},round:'F'},
+];
+const ROUNDNAME={R32:'Dieciseisavos de final',R16:'Octavos de final',QF:'Cuartos de final',SF:'Semifinales','3P':'Tercer puesto',F:'Final'};
+function groupStandings(){const tbl={};
+  for(const g in G){const teams=G[g],pts={},gd={};teams.forEach(t=>{pts[t]=0;gd[t]=0;});
+    FX.filter(f=>f.group===g).forEach(f=>{const pr=matchProb(f.home,f.away);
+      pts[f.home]+=3*pr.pw/100+pr.pd/100;pts[f.away]+=3*pr.pl/100+pr.pd/100;
+      gd[f.home]+=pr.xgh-pr.xga;gd[f.away]+=pr.xga-pr.xgh;});
+    tbl[g]={order:teams.slice().sort((a,b)=>(pts[b]-pts[a])||(gd[b]-gd[a])||(rating(b)-rating(a))),pts};}
+  return tbl;}
+function assignThirds(tbl){
+  const top8=Object.keys(G).map(g=>({g,team:tbl[g].order[2],pts:tbl[g].pts[tbl[g].order[2]]})).sort((a,b)=>b.pts-a.pts).slice(0,8);
+  const slots=KO.filter(m=>m.R.t==='3').map(m=>({m:m.n,gs:m.R.gs}));
+  const matchT=new Array(slots.length).fill(-1);
+  function aug(ti,seen){for(let si=0;si<slots.length;si++){
+    if(slots[si].gs.includes(top8[ti].g)&&!seen[si]){seen[si]=1;
+      if(matchT[si]<0||aug(matchT[si],seen)){matchT[si]=ti;return true;}}}return false;}
+  for(let ti=0;ti<top8.length;ti++)aug(ti,new Array(slots.length).fill(0));
+  const out={};slots.forEach((s,si)=>{if(matchT[si]>=0)out[s.m]=top8[matchT[si]].team;});
+  return out;}
+function knockout(){const tbl=groupStandings();const thirdAssign=assignThirds(tbl);
+  const win={},lose={},prob={};
+  const teamOf=s=>{if(s.t==='1')return tbl[s.g].order[0];if(s.t==='2')return tbl[s.g].order[1];
+    if(s.t==='3')return thirdAssign[s._m];if(s.t==='W')return win[s.m];if(s.t==='L')return lose[s.m];};
+  KO.forEach(m=>{if(m.L.t==='3')m.L._m=m.n;if(m.R.t==='3')m.R._m=m.n;
+    const a=teamOf(m.L),b=teamOf(m.R),pr=matchProb(a,b);
+    const advA=pr.pw+pr.pd/2,advB=pr.pl+pr.pd/2,w=advA>=advB?a:b,l=advA>=advB?b:a;
+    win[m.n]=w;lose[m.n]=l;prob[m.n]={a,b,advA,advB};});
+  return {tbl,win,lose,prob};}
+function seedLabel(s){if(s.t==='1')return '1&ordm; '+s.g;if(s.t==='2')return '2&ordm; '+s.g;
+  if(s.t==='3')return '3&ordm;';if(s.t==='W')return 'G P'+s.m;if(s.t==='L')return 'P P'+s.m;}
+function koSide(team,seed,adv,winner){const c=C[team];
+  return `<div class="ko-side ${winner?'win':''}">
+    <span class="ko-seed">${seed}</span>
+    <img class="flag" src="${flag(c.iso)}" alt="" style="width:26px;height:18px">
+    <span class="ko-nm">${team}</span>
+    <span class="ko-adv">${adv.toFixed(0)}%</span></div>`;}
+function renderKO(){const K=knockout();const champ=C[K.win[104]];
+  let h=`<div class="champ"><span class="trophy">&#127942;</span>
+    <img class="flag" src="${flag(champ.iso)}" alt="">
+    <div><div class="ct">Campe&oacute;n proyectado</div><div class="cn">${K.win[104]}</div>
+    <div class="cp">Subcampe&oacute;n ${K.prob[104].a===K.win[104]?K.prob[104].b:K.prob[104].a} &middot; 3&ordm; ${K.win[103]}</div></div></div>`;
+  const order=['R32','R16','QF','SF','3P','F'];
+  order.forEach(rd=>{const ms=KO.filter(m=>m.round===rd);
+    h+=`<div class="koround"><div class="korhead">${ROUNDNAME[rd]} <span class="cnt">${ms.length} partido(s)</span></div><div class="kogrid">`;
+    ms.forEach(m=>{const p=K.prob[m.n];const aWin=p.advA>=p.advB;const wname=aWin?p.a:p.b;
+      h+=`<div class="komatch">
+        <div class="ko-head"><span>P${m.n} &middot; ${dlabel(m.date)}</span><span>Est. ${m.st}</span></div>
+        ${koSide(p.a,seedLabel(m.L),p.advA,aWin)}
+        ${koSide(p.b,seedLabel(m.R),p.advB,!aWin)}
+        <div class="ko-advbar"><i style="width:${p.advA.toFixed(0)}%"></i></div>
+      </div>`;});
+    h+=`</div></div>`;});
+  document.getElementById('bracket').innerHTML=h;}
+
 /* TABS */
 function switchTab(v){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id===v));
@@ -376,7 +497,7 @@ const slider=document.getElementById('blend');
 function applyBlend(){W=slider.value/100;
   document.getElementById('bH').textContent=(100-slider.value)+'%';
   document.getElementById('bF').textContent=slider.value+'%';
-  renderRank();renderProfile(curCountry);renderFixtures();renderGroups();}
+  renderRank();renderProfile(curCountry);renderFixtures();renderGroups();renderKO();}
 slider.oninput=applyBlend;
 document.querySelectorAll('.preset').forEach(p=>p.onclick=()=>{slider.value=p.dataset.w;applyBlend();});
 
