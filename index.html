@@ -96,6 +96,11 @@ section.view.on{display:block}
 .delta{font-family:'Spline Sans Mono',monospace;font-size:10px;padding:1px 5px;border-radius:4px;margin-left:6px}
 .delta.up{color:var(--green);background:rgba(61,220,151,.12)}
 .delta.dn{color:var(--red);background:rgba(255,93,93,.12)}
+.alive-tag{font-size:9px;font-family:'Spline Sans Mono',monospace;color:var(--green);border:1px solid rgba(61,220,151,.4);background:rgba(61,220,151,.10);border-radius:5px;padding:1px 6px;margin-left:7px;vertical-align:middle;letter-spacing:.05em}
+.rank-row.elim{opacity:.5}
+.rank-row.elim .rk-bar i{background:var(--faint)}
+.rank-div{font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+  padding:14px 14px 7px;border-top:1px solid var(--line);margin-top:8px}
 
 .selbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
 select{font-family:'Spline Sans',sans-serif;font-size:14px;color:var(--txt);background:var(--surf);
@@ -262,7 +267,7 @@ footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--faint);f
 <main class="wrap">
   <section class="view on" id="resumen">
     <div class="sec-h">Ranking de poder combinado</div>
-    <p class="sec-d">El <b style="color:var(--txt)">poder combinado</b> resume la fuerza de cada selecci&oacute;n en un solo n&uacute;mero (ataque &divide; defensa): cuanto m&aacute;s alto, m&aacute;s probable es que gane. Combina su rendimiento hist&oacute;rico en Mundiales con su ranking FIFA actual, en la proporci&oacute;n que elijas con el control de arriba. Las etiquetas <span style="color:var(--green)">&#9650;</span>/<span style="color:var(--red)">&#9660;</span> indican cu&aacute;ntos puestos gana o pierde la selecci&oacute;n en esta tabla frente a su posici&oacute;n en el ranking FIFA puro &mdash; es decir, cu&aacute;nto la favorece o perjudica tomar en cuenta la historia. La barra est&aacute; normalizada al l&iacute;der. Pulsa cualquier fila para ver el perfil completo. <span class="star">&#9733;</span> = t&iacute;tulos mundiales.</p>
+    <p class="sec-d">El <b style="color:var(--txt)">poder combinado</b> resume la fuerza de cada selecci&oacute;n en un solo n&uacute;mero (ataque &divide; defensa): cuanto m&aacute;s alto, m&aacute;s probable es que gane. Combina historia mundialista, ranking FIFA y forma en el torneo, en la proporci&oacute;n que elijas arriba. Las selecciones <span style="color:var(--green)">todav&iacute;a en competencia</span> aparecen primero; debajo, las eliminadas (atenuadas). Las flechas <span style="color:var(--green)">&#9650;</span>/<span style="color:var(--red)">&#9660;</span> comparan con el ranking FIFA puro. Pulsa una fila para el perfil. <span class="star">&#9733;</span> = t&iacute;tulos.</p>
     <div class="card"><div id="ranklist"></div></div>
   </section>
   <section class="view" id="pais">
@@ -364,20 +369,36 @@ document.getElementById('meta').innerHTML=
    <span class="chip"><b>72</b> partidos de grupo</span>`;
 
 /* RANKING */
+function aliveSet(){const K=knockout();
+  const r32=new Set();KO.filter(m=>m.round==='R32').forEach(m=>{r32.add(m.home);r32.add(m.away);});
+  const elim=new Set();
+  Object.keys(C).forEach(t=>{if(!r32.has(t))elim.add(t);}); // no clasificó a dieciseisavos
+  KO.forEach(m=>{const p=K.prob[m.n]; if(p&&p.res)elim.add(K.lose[m.n]);}); // perdió una eliminatoria
+  const alive=new Set([...r32].filter(t=>!elim.has(t)));
+  // deepest round reached label per team
+  const stage={};const RN={R32:'Dieciseisavos',R16:'Octavos',QF:'Cuartos',SF:'Semifinal',F:'Final'};
+  return {alive,elim};}
 function renderRank(){
-  const r=Object.keys(C).map(es=>({es,r:rating(es)})).sort((a,b)=>b.r-a.r);
-  const mx=r[0].r;
-  document.getElementById('ranklist').innerHTML=r.map((o,i)=>{
+  const {alive}=aliveSet();
+  const r=Object.keys(C).map(es=>({es,r:rating(es),a:alive.has(es)}))
+    .sort((x,y)=>(y.a-x.a)||(y.r-x.r));
+  const mx=Math.max(...r.map(o=>o.r));
+  let firstElim=r.findIndex(o=>!o.a);
+  let html='';
+  r.forEach((o,i)=>{
     const c=C[o.es];const dRank=c.fifaRank-(i+1);
     const dl=dRank>0?`<span class="delta up">&#9650;${dRank}</span>`:dRank<0?`<span class="delta dn">&#9660;${-dRank}</span>`:'';
-    return `<div class="rank-row" data-country="${o.es}">
+    if(i===firstElim && firstElim>0) html+=`<div class="rank-div">Eliminados</div>`;
+    const tag=o.a?'<span class="alive-tag">EN JUEGO</span>':'';
+    html+=`<div class="rank-row ${o.a?'':'elim'}" data-country="${o.es}">
       <div class="rank-n">${String(i+1).padStart(2,'0')}</div>
       <img class="flag" src="${flag(c.iso)}" alt="">
-      <div><div class="rk-name">${o.es} ${c.profile.titles?`<span class="star">${stars(c.profile.titles)}</span>`:''}${dl}${!c.hist?'<span class="badge-deb">DEBUT</span>':''}</div>
+      <div><div class="rk-name">${o.es} ${c.profile.titles?`<span class="star">${stars(c.profile.titles)}</span>`:''}${tag}${dl}</div>
         <div class="rk-meta">Grupo ${c.group} &middot; FIFA #${c.fifaRank} (${c.fifa.toFixed(0)}) &middot; ${c.profile.apps} part.</div></div>
       <div class="rk-bar-wrap"><div class="rk-bar"><i style="width:${(o.r/mx*100).toFixed(1)}%"></i></div>
         <div class="rk-val">${o.r.toFixed(2)}</div></div>
-    </div>`;}).join('');
+    </div>`;});
+  document.getElementById('ranklist').innerHTML=html;
   document.querySelectorAll('.rank-row').forEach(x=>x.onclick=()=>{selectCountry(x.dataset.country);switchTab('pais');});
 }
 
@@ -486,21 +507,21 @@ function renderGroups(){const tbl=currentStandings();
 /* ===== KNOCKOUT (matches 73-104) ===== */
 const KO=[
  {n:73,date:'2026-06-28',st:'Los Ángeles',home:'Sudáfrica',away:'Canadá',sh:'2&ordm; A',sa:'2&ordm; B',res:{h:0,a:1},round:'R32'},
- {n:74,date:'2026-06-29',st:'Boston',home:'Alemania',away:'Paraguay',sh:'1&ordm; E',sa:'3&ordm; D',round:'R32'},
- {n:75,date:'2026-06-30',st:'Monterrey',home:'Países Bajos',away:'Marruecos',sh:'1&ordm; F',sa:'2&ordm; C',round:'R32'},
- {n:76,date:'2026-06-29',st:'Houston',home:'Brasil',away:'Japón',sh:'1&ordm; C',sa:'2&ordm; F',round:'R32'},
- {n:77,date:'2026-06-30',st:'Nueva York NJ',home:'Francia',away:'Suecia',sh:'1&ordm; I',sa:'3&ordm; F',round:'R32'},
- {n:78,date:'2026-06-30',st:'Dallas',home:'Costa de Marfil',away:'Noruega',sh:'2&ordm; E',sa:'2&ordm; I',round:'R32'},
- {n:79,date:'2026-07-01',st:'Ciudad de México',home:'México',away:'Ecuador',sh:'1&ordm; A',sa:'3&ordm; E',round:'R32'},
- {n:80,date:'2026-07-01',st:'Atlanta',home:'Inglaterra',away:'RD Congo',sh:'1&ordm; L',sa:'3&ordm; K',round:'R32'},
- {n:81,date:'2026-07-02',st:'Bahía de San Francisco',home:'Estados Unidos',away:'Bosnia y Herzegovina',sh:'1&ordm; D',sa:'3&ordm; B',round:'R32'},
- {n:82,date:'2026-07-01',st:'Seattle',home:'Bélgica',away:'Senegal',sh:'1&ordm; G',sa:'3&ordm; I',round:'R32'},
- {n:83,date:'2026-07-03',st:'Toronto',home:'Portugal',away:'Croacia',sh:'2&ordm; K',sa:'2&ordm; L',round:'R32'},
- {n:84,date:'2026-07-02',st:'Los Ángeles',home:'España',away:'Austria',sh:'1&ordm; H',sa:'2&ordm; J',round:'R32'},
- {n:85,date:'2026-07-03',st:'BC Place Vancouver',home:'Suiza',away:'Argelia',sh:'1&ordm; B',sa:'3&ordm; J',round:'R32'},
- {n:86,date:'2026-07-03',st:'Miami',home:'Argentina',away:'Cabo Verde',sh:'1&ordm; J',sa:'2&ordm; H',round:'R32'},
- {n:87,date:'2026-07-04',st:'Kansas City',home:'Colombia',away:'Ghana',sh:'1&ordm; K',sa:'3&ordm; L',round:'R32'},
- {n:88,date:'2026-07-03',st:'Dallas',home:'Australia',away:'Egipto',sh:'2&ordm; D',sa:'2&ordm; G',round:'R32'},
+ {n:74,date:'2026-06-29',st:'Boston',home:'Alemania',away:'Paraguay',sh:'1&ordm; E',sa:'3&ordm; D',res:{h:1,a:1,pk:[3,4]},round:'R32'},
+ {n:75,date:'2026-06-30',st:'Monterrey',home:'Países Bajos',away:'Marruecos',sh:'1&ordm; F',sa:'2&ordm; C',res:{h:1,a:1,pk:[2,3]},round:'R32'},
+ {n:76,date:'2026-06-29',st:'Houston',home:'Brasil',away:'Japón',sh:'1&ordm; C',sa:'2&ordm; F',res:{h:2,a:1},round:'R32'},
+ {n:77,date:'2026-06-30',st:'Nueva York NJ',home:'Francia',away:'Suecia',sh:'1&ordm; I',sa:'3&ordm; F',res:{h:3,a:0},round:'R32'},
+ {n:78,date:'2026-06-30',st:'Dallas',home:'Costa de Marfil',away:'Noruega',sh:'2&ordm; E',sa:'2&ordm; I',res:{h:1,a:2},round:'R32'},
+ {n:79,date:'2026-07-01',st:'Ciudad de México',home:'México',away:'Ecuador',sh:'1&ordm; A',sa:'3&ordm; E',res:{h:2,a:0},round:'R32'},
+ {n:80,date:'2026-07-01',st:'Atlanta',home:'Inglaterra',away:'RD Congo',sh:'1&ordm; L',sa:'3&ordm; K',res:{h:2,a:1},round:'R32'},
+ {n:81,date:'2026-07-02',st:'Bahía de San Francisco',home:'Estados Unidos',away:'Bosnia y Herzegovina',sh:'1&ordm; D',sa:'3&ordm; B',res:{h:2,a:0},round:'R32'},
+ {n:82,date:'2026-07-01',st:'Seattle',home:'Bélgica',away:'Senegal',sh:'1&ordm; G',sa:'3&ordm; I',res:{h:3,a:2},round:'R32'},
+ {n:83,date:'2026-07-03',st:'Toronto',home:'Portugal',away:'Croacia',sh:'2&ordm; K',sa:'2&ordm; L',res:{h:2,a:1},round:'R32'},
+ {n:84,date:'2026-07-02',st:'Los Ángeles',home:'España',away:'Austria',sh:'1&ordm; H',sa:'2&ordm; J',res:{h:3,a:0},round:'R32'},
+ {n:85,date:'2026-07-03',st:'BC Place Vancouver',home:'Suiza',away:'Argelia',sh:'1&ordm; B',sa:'3&ordm; J',res:{h:2,a:0},round:'R32'},
+ {n:86,date:'2026-07-03',st:'Miami',home:'Argentina',away:'Cabo Verde',sh:'1&ordm; J',sa:'2&ordm; H',res:{h:3,a:2},round:'R32'},
+ {n:87,date:'2026-07-04',st:'Kansas City',home:'Colombia',away:'Ghana',sh:'1&ordm; K',sa:'3&ordm; L',res:{h:1,a:0},round:'R32'},
+ {n:88,date:'2026-07-03',st:'Dallas',home:'Australia',away:'Egipto',sh:'2&ordm; D',sa:'2&ordm; G',res:{h:1,a:1,pk:[2,4]},round:'R32'},
  {n:89,date:'2026-07-04',st:'Filadelfia',L:{t:'W',m:74},R:{t:'W',m:77},round:'R16'},
  {n:90,date:'2026-07-04',st:'Houston',L:{t:'W',m:73},R:{t:'W',m:75},round:'R16'},
  {n:91,date:'2026-07-05',st:'Nueva York NJ',L:{t:'W',m:76},R:{t:'W',m:78},round:'R16'},
@@ -556,7 +577,8 @@ function knockout(){
     const a=m.home?m.home:teamOf(m.L), b=m.away?m.away:teamOf(m.R);
     const pr=matchProb(a,b);
     let advA=pr.pw+pr.pd/2, advB=pr.pl+pr.pd/2, w,l;
-    if(m.res){const hw=m.res.h>m.res.a; w=hw?a:b; l=hw?b:a; advA=hw?100:0; advB=hw?0:100;}
+    if(m.res){let hw; if(m.res.h!==m.res.a) hw=m.res.h>m.res.a; else hw=m.res.pk[0]>m.res.pk[1];
+      w=hw?a:b; l=hw?b:a; advA=hw?100:0; advB=hw?0:100;}
     else {w=advA>=advB?a:b; l=advA>=advB?b:a;}
     win[m.n]=w; lose[m.n]=l; prob[m.n]={a,b,advA,advB,res:m.res||null};
   });
@@ -579,9 +601,11 @@ function renderKO(){const K=knockout();const champ=C[K.win[104]];
     ms.forEach(m=>{const p=K.prob[m.n];const aWin=p.advA>=p.advB;
       const sH=m.sh||seedLabel(m.L), sA=m.sa||seedLabel(m.R);
       const played=!!p.res;
-      const scA=played?String(p.res.h):null, scB=played?String(p.res.a):null;
+      const scA=played?(String(p.res.h)+(p.res.pk?` <span style="color:var(--faint)">(${p.res.pk[0]})</span>`:'')):null;
+      const scB=played?(String(p.res.a)+(p.res.pk?` <span style="color:var(--faint)">(${p.res.pk[1]})</span>`:'')):null;
+      const ftTag=played?(p.res.pk?'<span class="rtag">PENALES</span>':'<span class="rtag">FINAL</span>'):'Est. '+m.st;
       h+=`<div class="komatch ${played?'played':''}">
-        <div class="ko-head"><span>P${m.n} &middot; ${dlabel(m.date)}</span><span>${played?'<span class=\"rtag\">FINAL</span>':'Est. '+m.st}</span></div>
+        <div class="ko-head"><span>P${m.n} &middot; ${dlabel(m.date)}</span><span>${ftTag}</span></div>
         ${koSide(p.a,sH,p.advA,aWin,scA)}
         ${koSide(p.b,sA,p.advB,!aWin,scB)}
         ${played?'':`<div class="ko-advbar"><i style="width:${p.advA.toFixed(0)}%"></i></div>`}
