@@ -97,6 +97,7 @@ section.view.on{display:block}
 .delta.up{color:var(--green);background:rgba(61,220,151,.12)}
 .delta.dn{color:var(--red);background:rgba(255,93,93,.12)}
 .alive-tag{font-size:9px;font-family:'Spline Sans Mono',monospace;color:var(--green);border:1px solid rgba(61,220,151,.4);background:rgba(61,220,151,.10);border-radius:5px;padding:1px 6px;margin-left:7px;vertical-align:middle;letter-spacing:.05em}
+.champ-tag{font-size:9.5px;font-family:'Spline Sans Mono',monospace;color:var(--draw);border:1px solid rgba(255,200,61,.5);background:rgba(255,200,61,.14);border-radius:5px;padding:1px 7px;margin-left:7px;vertical-align:middle;letter-spacing:.06em;font-weight:600}
 .rank-row.elim{opacity:.5}
 .rank-row.elim .rk-bar i{background:var(--faint)}
 .rank-div{font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
@@ -376,9 +377,10 @@ function aliveSet(){const K=knockout();
   KO.forEach(m=>{if(!m.res){const p=K.prob[m.n];if(p){alive.add(p.a);alive.add(p.b);}}});
   if(alive.size===0 && K.win[104]) alive.add(K.win[104]); // torneo terminado: destaca al campeón
   const elim=new Set(Object.keys(C).filter(t=>!alive.has(t)));
-  return {alive,elim,r32};}
+  const done=!!K.prob[104].res;
+  return {alive,elim,r32,done,champion:done?K.win[104]:null};}
 function renderRank(){
-  const {alive}=aliveSet();
+  const {alive,champion}=aliveSet();
   const r=Object.keys(C).map(es=>({es,r:rating(es),a:alive.has(es)}))
     .sort((x,y)=>(y.a-x.a)||(y.r-x.r));
   const mx=Math.max(...r.map(o=>o.r));
@@ -388,7 +390,7 @@ function renderRank(){
     const c=C[o.es];const dRank=c.fifaRank-(i+1);
     const dl=dRank>0?`<span class="delta up">&#9650;${dRank}</span>`:dRank<0?`<span class="delta dn">&#9660;${-dRank}</span>`:'';
     if(i===firstElim && firstElim>0) html+=`<div class="rank-div">Eliminados</div>`;
-    const tag=o.a?'<span class="alive-tag">EN JUEGO</span>':'';
+    const tag=o.es===champion?'<span class="champ-tag">&#127942; CAMPE&Oacute;N</span>':(o.a?'<span class="alive-tag">EN JUEGO</span>':'');
     html+=`<div class="rank-row ${o.a?'':'elim'}" data-country="${o.es}">
       <div class="rank-n">${String(i+1).padStart(2,'0')}</div>
       <img class="flag" src="${flag(c.iso)}" alt="">
@@ -535,8 +537,8 @@ const KO=[
  {n:100,date:'2026-07-11',st:'Kansas City',L:{t:'W',m:95},R:{t:'W',m:96},res:{h:3,a:1},round:'QF'},
  {n:101,date:'2026-07-14',st:'Dallas',L:{t:'W',m:97},R:{t:'W',m:98},res:{h:0,a:2},round:'SF'},
  {n:102,date:'2026-07-15',st:'Atlanta',L:{t:'W',m:99},R:{t:'W',m:100},res:{h:1,a:2},round:'SF'},
- {n:103,date:'2026-07-18',st:'Miami',L:{t:'L',m:101},R:{t:'L',m:102},round:'3P'},
- {n:104,date:'2026-07-19',st:'Nueva York NJ',L:{t:'W',m:101},R:{t:'W',m:102},round:'F'},
+ {n:103,date:'2026-07-18',st:'Miami',L:{t:'L',m:101},R:{t:'L',m:102},res:{h:4,a:6},round:'3P'},
+ {n:104,date:'2026-07-19',st:'Nueva York NJ',L:{t:'W',m:101},R:{t:'W',m:102},res:{h:1,a:0},round:'F'},
 ];
 const ROUNDNAME={R32:'Dieciseisavos de final',R16:'Octavos de final',QF:'Cuartos de final',SF:'Semifinales','3P':'Tercer puesto',F:'Final'};
 function currentStandings(){const tbl={};
@@ -589,11 +591,12 @@ function koSide(team,seed,adv,winner,scoreTxt){const c=C[team];
     <img class="flag" src="${flag(c.iso)}" alt="" style="width:26px;height:18px">
     <span class="ko-nm">${team}</span>
     <span class="ko-adv">${scoreTxt!=null?scoreTxt:adv.toFixed(0)+'%'}</span></div>`;}
-function renderKO(){const K=knockout();const champ=C[K.win[104]];
+function renderKO(){const K=knockout();const champ=C[K.win[104]];const done=!!K.prob[104].res;
+  const sub=K.prob[104].a===K.win[104]?K.prob[104].b:K.prob[104].a;
   let h=`<div class="champ"><span class="trophy">&#127942;</span>
     <img class="flag" src="${flag(champ.iso)}" alt="">
-    <div><div class="ct">Campe&oacute;n proyectado</div><div class="cn">${K.win[104]}</div>
-    <div class="cp">Subcampe&oacute;n ${K.prob[104].a===K.win[104]?K.prob[104].b:K.prob[104].a} &middot; 3&ordm; ${K.win[103]}</div></div></div>`;
+    <div><div class="ct">${done?'Campe&oacute;n del mundo':'Campe&oacute;n proyectado'}</div><div class="cn">${K.win[104]}</div>
+    <div class="cp">Subcampe&oacute;n ${sub} &middot; 3&ordm; ${K.win[103]}${done?'':' &middot; proyecci&oacute;n del modelo'}</div></div></div>`;
   const order=['R32','R16','QF','SF','3P','F'];
   order.forEach(rd=>{const ms=KO.filter(m=>m.round===rd);
     h+=`<div class="koround"><div class="korhead">${ROUNDNAME[rd]} <span class="cnt">${ms.length} partido(s)</span></div><div class="kogrid">`;
